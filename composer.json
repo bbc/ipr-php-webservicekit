@@ -1,0 +1,38 @@
+{
+    "name": "bbc/ipr-webservicekit",
+    "description": "Webservice reading layer library",
+    "minimum-stability": "stable",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alex Gisby",
+            "email": "alex.gisby@bbc.co.uk"
+        }
+    ],
+    "require": {
+        "php": ">=5.5",
+        "psr/log": "^1.0",
+        "doctrine/cache": "^1.0",
+        "guzzlehttp/guzzle": "^6.1",
+        "solution10/circuitbreaker": "^1.0",
+        "bbc/ipr-cache": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^5.0",
+        "squizlabs/php_codesniffer": "^2.0",
+        "silex/silex": "^2.0",
+        "silex/web-profiler": "^2.0",
+        "symfony/dom-crawler": "^3.0",
+        "symfony/css-selector": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "BBC\\iPlayerRadio\\WebserviceKit\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "BBC\\iPlayerRadio\\WebserviceKit\\Tests\\": "tests/"
+        }
+    }
+}
