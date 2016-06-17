@@ -8,6 +8,7 @@ use BBC\iPlayerRadio\WebserviceKit\NoResponseException;
 use BBC\iPlayerRadio\WebserviceKit\PHPUnit\GetMockedGuzzleClient;
 use BBC\iPlayerRadio\WebserviceKit\QueryInterface;
 use BBC\iPlayerRadio\WebserviceKit\Service;
+use BBC\iPlayerRadio\WebserviceKit\ServiceInterface;
 use Doctrine\Common\Cache\ArrayCache;
 use GuzzleHttp\Psr7\Response;
 
@@ -23,7 +24,7 @@ use GuzzleHttp\Psr7\Response;
  * @author      Alex Gisby <alex.gisby@bbc.co.uk>
  * @copyright   BBC
  */
-class FixtureService
+class FixtureService implements ServiceInterface
 {
     use GetMockedGuzzleClient;
 
@@ -40,7 +41,7 @@ class FixtureService
     /**
      * @var     array
      */
-    protected $conditions;
+    protected $conditions = [];
 
     /**
      * @var     QueryCondition
@@ -82,6 +83,7 @@ class FixtureService
      */
     public function __call($name, $arguments)
     {
+        exit('__CALL '.$name);
         // Do nothing, just capture.
     }
 
@@ -96,7 +98,8 @@ class FixtureService
     public function getCurrentQuery($fixtureDefinition = null)
     {
         if (!isset($this->currentQuery)) {
-            $this->currentQuery = new QueryCondition();
+            $this->currentQuery = new QueryCondition($fixtureDefinition);
+
         }
         return $this->currentQuery;
     }
@@ -207,6 +210,8 @@ class FixtureService
      */
     public function fetch(QueryInterface $query, $raw = false)
     {
+//        var_dump($this->conditions); exit;
+
         // Loop through our conditions and see if one matches:
         $match = false;
         foreach ($this->conditions as $cond) {

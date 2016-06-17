@@ -61,7 +61,7 @@ class FixturesDataCollector extends DataCollector
      */
     public function collect(Request $request, Response $response, \Exception $exception = null)
     {
-        // Doesn't do anything.
+        
     }
 
     public function data()
@@ -90,6 +90,8 @@ class FixturesDataCollector extends DataCollector
     public function conditionMatched(QueryInterface $query, QueryCondition $condition, GuzzleResponse $response)
     {
         $this->data['fixturedRequests'][] = [
+            'definition' => $condition->getFixtureDefinition(),
+            'service' => $condition->getService(),
             'url' => $query->getURL(),
             'condition' => (string)$condition,
             'status' => $response->getStatusCode(),
@@ -97,5 +99,22 @@ class FixturesDataCollector extends DataCollector
         ];
 
         return $this;
+    }
+
+    /**
+     * Returns whether a given URL was fixtured. If it was, returns an array of information
+     * about that fixture, otherwise a false.
+     *
+     * @param   string      $url
+     * @return  array|false
+     */
+    public function urlFixtureInfo($url)
+    {
+        foreach ($this->data['fixturedRequests'] as $req) {
+            if ($req['url'] === $url) {
+                return $req;
+            }
+        }
+        return false;
     }
 }

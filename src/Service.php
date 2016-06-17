@@ -27,7 +27,7 @@ use Solution10\CircuitBreaker\CircuitBreakerInterface;
  * @copyright   BBC
  * @see         docs/04-webservicekit.md
  */
-class Service
+class Service implements ServiceInterface
 {
     /**
      * @var     Client

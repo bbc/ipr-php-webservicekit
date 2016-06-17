@@ -91,12 +91,21 @@
             <tbody>
             {% for r in requests %}
                 <tr class="guzzle-request-info">
-                    <td class="guzzle-request-status">{{ r.http_code }}</td>
-                    <td class="guzzle-request-contenttype">{{ r.content_type }}</td>
-                    <td class="guzzle-request-totaltime">{{ r.total_time * 1000 }}</td>
-                    <td class="guzzle-request-connecttime">{{ r.connect_time * 1000 }}</td>
-                    <td class="guzzle-request-sizedownload">{{ r.size_download }}</td>
-                    <td class="guzzle-request-speeddownload">{{ r.speed_download }}</td>
+                    {% if r.fixture %}
+                        <td class="guzzle-request-status">{{ r.fixture.status }}</td>
+                        <td class="guzzle-request-fixtureinfo" colspan="5">
+                            Fixtured by <strong>{{ r.fixture.definition }}</strong>
+                            <br>
+                            Condition: {{ r.fixture.condition }}
+                        </td>
+                    {% else %}
+                        <td class="guzzle-request-status">{{ r.http_code }}</td>
+                        <td class="guzzle-request-contenttype">{{ r.content_type }}</td>
+                        <td class="guzzle-request-totaltime">{{ r.total_time * 1000 }}</td>
+                        <td class="guzzle-request-connecttime">{{ r.connect_time * 1000 }}</td>
+                        <td class="guzzle-request-sizedownload">{{ r.size_download }}</td>
+                        <td class="guzzle-request-speeddownload">{{ r.speed_download }}</td>
+                    {% endif %}
                     <td class="guzzle-request-cachekey">{{ r.cacheKey }}</td>
                 </tr>
                 <tr class="guzzle-request-additional">

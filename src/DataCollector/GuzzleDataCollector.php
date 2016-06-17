@@ -51,7 +51,14 @@ class GuzzleDataCollector extends DataCollector
      */
     public function collect(Request $request, Response $response, \Exception $exception = null)
     {
-        // Does nothing
+        // We can now loop through and see if any of these were fixtured:
+        $fixtureCollector = FixturesDataCollector::instance();
+        foreach ($this->data['requests'] as $url => &$requests) {
+            $fixtureInfo = $fixtureCollector->urlFixtureInfo($url);
+            foreach ($requests as &$request) {
+                $request['fixture'] = $fixtureInfo;
+            }
+        }
     }
 
     public function data()

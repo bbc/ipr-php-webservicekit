@@ -55,6 +55,14 @@ class QueryCondition
     }
 
     /**
+     * @return  string
+     */
+    public function getFixtureDefinition()
+    {
+        return $this->fixtureDefinition;
+    }
+
+    /**
      * Tells the query which service name this query should match
      *
      * @param   string
@@ -64,6 +72,16 @@ class QueryCondition
     {
         $this->service = $service;
         return $this;
+    }
+
+    /**
+     * Returns the service this is acting upon
+     *
+     * @return  string
+     */
+    public function getService()
+    {
+        return $this->service;
     }
 
     /**

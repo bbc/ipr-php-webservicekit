@@ -2,8 +2,11 @@
 
 namespace BBC\iPlayerRadio\WebserviceKit\Fixtures;
 
+use BBC\iPlayerRadio\WebserviceKit\DataCollector\FixturesDataCollector;
+use Pimple\Container;
+use Pimple\ServiceProviderInterface;
+use Silex\Api\BootableProviderInterface;
 use Silex\Application;
-use Silex\ServiceProviderInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -16,40 +19,117 @@ use Symfony\Component\HttpFoundation\Request;
  * @copyright   BBC
  * @codeCoverageIgnore
  */
-class FixtureServiceProvider implements ServiceProviderInterface
+class FixtureServiceProvider implements ServiceProviderInterface, BootableProviderInterface
 {
-    public function register(Application $app)
-    {
+    /**
+     * @var     array
+     */
+    protected $fixtureNamespaces = [];
 
+    /**
+     * @var     string
+     */
+    protected $diContainerKey = 'webservicekit';
+
+    /**
+     * @var     FixtureService
+     */
+    protected $fixtureService;
+
+    /**
+     * Sets the namespaces to load Fixtures from. It's up to you to make sure the Autoloader will
+     * understand these!
+     *
+     *      $fixtureSP->setNamespaces([
+     *          'Acme\\MyProduct\\Fixtures',
+     *          'Acme\\YourProduct\\Fixtures',
+     *      ]);
+     *
+     * @param   array   $namespaces
+     * @return  $this
+     */
+    public function setNamespaces(array $namespaces)
+    {
+        $this->fixtureNamespaces = $namespaces;
+        return $this;
     }
 
+    /**
+     * Returns the fixture namespaces the service provider is using
+     *
+     * @return  array
+     */
+    public function getNamespaces()
+    {
+        return $this->fixtureNamespaces;
+    }
+
+    /**
+     * Returns the key in the DI container where webservicekit is
+     *
+     * @return  string
+     */
+    public function getDiContainerKey()
+    {
+        return $this->diContainerKey;
+    }
+
+    /**
+     * Sets the key in the DI container where webservicekit is
+     *
+     * @param   string  $diContainerKey
+     * @return  $this
+     */
+    public function setDiContainerKey($diContainerKey)
+    {
+        $this->diContainerKey = $diContainerKey;
+        return $this;
+    }
+
+    /**
+     * Registers services on the given container.
+     *
+     * This method should only be used to configure services and parameters.
+     * It should not get services.
+     *
+     * @param Container $pimple A container instance
+     */
+    public function register(Container $pimple)
+    {
+        // Swaps out the Service for a FixtureService
+        $fixtureService = new FixtureService($pimple[$this->diContainerKey]);
+        $this->fixtureService = $fixtureService;
+        unset($pimple[$this->diContainerKey]);
+        $pimple[$this->diContainerKey] = function () use ($fixtureService) {
+            return $fixtureService;
+        };
+    }
+
+    /**
+     * @param Application $app
+     */
     public function boot(Application $app)
     {
         $app->before(function (Request $request) use ($app) {
             $definedFailure = $request->query->get('_fixture', false);
             if ($definedFailure) {
-                // This is a little naughty, but is quicker and easier than inspecting the package
-                // classes themselves.
-                $composerJSONFile = file_get_contents(__DIR__.'/../../../../composer.json');
-                $composerJSON = json_decode($composerJSONFile);
-                $failureClass = false;
                 $namespaces = [];
-                foreach ($composerJSON->autoload->{'psr-4'} as $ns => $path) {
+                foreach ($this->fixtureNamespaces as $ns) {
                     $namespaces[] = $ns;
-                    $fullClass = $ns.'Fixture\\'.$definedFailure;
+                    $fullClass = $ns.$definedFailure;
                     if (class_exists($fullClass)) {
                         /* @var     \BBC\iPlayerRadio\WebserviceKit\Fixtures\FixtureDefinition    $failureClass   */
-                        $failureClass = new $fullClass($app, $request);
+                        $failureClass = new $fullClass($this->fixtureService, $request);
                         $failureClass->implement();
 
                         // Tell the data collector about it:
-                        $app['data_collectors.fixtures']->fixtureUsed($app, $failureClass);
+//                        FixturesDataCollector::instance()->fixtureUsed($app, $failureClass);
                     }
                 }
 
-                if (!$failureClass) {
-                    $app['data_collectors.fixtures']->fixtureLoadFailed($definedFailure, $namespaces);
-                }
+//                if (!$failureClass) {
+//                    $app['data_collectors.fixtures']->fixtureLoadFailed($definedFailure, $namespaces);
+//                }
             }
         });
     }
