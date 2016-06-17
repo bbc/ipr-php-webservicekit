@@ -2,6 +2,7 @@
 
 namespace BBC\iPlayerRadio\WebserviceKit\Tests\Fixtures;
 
+use BBC\iPlayerRadio\WebserviceKit\Fixtures\FixtureService;
 use BBC\iPlayerRadio\WebserviceKit\PHPUnit\GetMockedService;
 use BBC\iPlayerRadio\WebserviceKit\PHPUnit\TestCase;
 use Pimple\Container;
@@ -14,32 +15,28 @@ class FixtureDefinitionTest extends TestCase
     /**
      * @return  Container
      */
-    protected function getMockContainer()
+    protected function getMockFixtureService()
     {
         $service = $this->getMockedService();
-        $container = new Container();
-        $container['webservicekit'] = function () use ($service) {
-            return $service;
-        };
-        return $container;
+        return new FixtureService($service);
     }
 
     /**
-     * @param   Container     $container
+     * @param   FixtureService     $service
      * @return  \BBC\iPlayerRadio\WebserviceKit\Fixtures\FixtureDefinition
      */
-    protected function getMockDefinition(Container $container)
+    protected function getMockDefinition(FixtureService $service)
     {
         return $this->getMockForAbstractClass(
             'BBC\\iPlayerRadio\\WebserviceKit\\Fixtures\\FixtureDefinition',
-            [$container, new Request()]
+            [$service, new Request()]
         );
     }
 
     public function testAlterService()
     {
-        $app = $this->getMockContainer();
-        $def = $this->getMockDefinition($app);
+        $fixtureService = $this->getMockFixtureService();
+        $def = $this->getMockDefinition($fixtureService);
 
         $altered = $def->alterService('bbc.mockservice');
 
@@ -47,21 +44,13 @@ class FixtureDefinitionTest extends TestCase
         $this->assertInstanceOf('BBC\\iPlayerRadio\\WebserviceKit\\Fixtures\\FixtureService', $altered);
 
         // Check the DI container.
-        $this->assertEquals($altered, $app['webservicekit']);
-    }
-
-    public function testAlterServiceUnknownKey()
-    {
-        $app = $this->getMockContainer();
-        $def = $this->getMockDefinition($app);
-        $altered = $def->alterService('unknown');
-        $this->assertEquals($altered, $app['webservicekit']);
+        $this->assertEquals($altered, $fixtureService);
     }
 
     public function testGetName()
     {
-        $app = $this->getMockContainer();
-        $def = $this->getMockDefinition($app);
+        $fixtureService = $this->getMockFixtureService();
+        $def = $this->getMockDefinition($fixtureService);
         $this->assertInternalType('string', $def->getName());
     }
 }

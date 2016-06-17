@@ -2,7 +2,6 @@
 
 namespace BBC\iPlayerRadio\WebserviceKit\Fixtures;
 
-use BBC\iPlayerRadio\WebserviceKit\DataCollector\FixturesDataCollector;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
 use Silex\Api\BootableProviderInterface;
@@ -17,7 +16,6 @@ use Symfony\Component\HttpFoundation\Request;
  * @package     BBC\iPlayerRadio\WebserviceKit\Fixtures
  * @author      Alex Gisby <alex.gisby@bbc.co.uk>
  * @copyright   BBC
- * @codeCoverageIgnore
  */
 class FixtureServiceProvider implements ServiceProviderInterface, BootableProviderInterface
 {
@@ -121,15 +119,8 @@ class FixtureServiceProvider implements ServiceProviderInterface, BootableProvid
                         /* @var     \BBC\iPlayerRadio\WebserviceKit\Fixtures\FixtureDefinition    $failureClass   */
                         $failureClass = new $fullClass($this->fixtureService, $request);
                         $failureClass->implement();
-
-                        // Tell the data collector about it:
-//                        FixturesDataCollector::instance()->fixtureUsed($app, $failureClass);
                     }
                 }
-
-//                if (!$failureClass) {
-//                    $app['data_collectors.fixtures']->fixtureLoadFailed($definedFailure, $namespaces);
-//                }
             }
         });
     }

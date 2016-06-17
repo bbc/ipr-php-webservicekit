@@ -52,7 +52,7 @@ class FixtureServiceTest extends TestCase
         $this->assertEquals($originalService, $fixtureService->getOriginalService());
 
         /** @var Service $newOriginal */
-        $newOriginal = $this->getMock('BBC\\iPlayerRadio\\WebserviceKit\\Service', [], [], 'Mock2Service', false);
+        $newOriginal = $this->createMock('BBC\\iPlayerRadio\\WebserviceKit\\Service', [], [], 'Mock2Service', false);
         $this->assertEquals($fixtureService, $fixtureService->setOriginalService($newOriginal));
         $this->assertEquals($newOriginal, $fixtureService->getOriginalService());
     }

@@ -2,9 +2,12 @@
 
 namespace BBC\iPlayerRadio\WebserviceKit\Tests\DataCollector;
 
+use BBC\iPlayerRadio\WebserviceKit\DataCollector\FixturesDataCollector;
 use BBC\iPlayerRadio\WebserviceKit\DataCollector\GuzzleDataCollector;
+use BBC\iPlayerRadio\WebserviceKit\Fixtures\QueryCondition;
 use BBC\iPlayerRadio\WebserviceKit\PHPUnit\GetTwig;
 use BBC\iPlayerRadio\WebserviceKit\PHPUnit\TestCase;
+use BBC\iPlayerRadio\WebserviceKit\Tests\Stubs\Query;
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use GuzzleHttp\Psr7\Response as GuzzleResponse;
 use GuzzleHttp\TransferStats;
@@ -69,10 +72,6 @@ class GuzzleDataCollectorTest extends TestCase
         ], $data);
     }
 
-    /**
-     * Collect should do nothing for this data collector, so we can just make
-     * sure it doesn't throw.
-     */
     public function testCollect()
     {
         $collector = new GuzzleDataCollector();
@@ -84,6 +83,44 @@ class GuzzleDataCollectorTest extends TestCase
             ['requests' => [], 'total_time' => 0, 'total_requests' => 0, 'statuses' => []],
             $collector->data()
         );
+    }
+
+    public function testCollectWithFixtures()
+    {
+        $query = new Query();
+        $condition = (new QueryCondition())
+            ->has('sid', 'bbc_radio_two');
+        $response = new GuzzleResponse(200, [], '{"message": "hello world"}');
+
+        FixturesDataCollector::instance()
+            ->conditionMatched($query, $condition, $response);
+
+        $stats = new TransferStats(
+            new GuzzleRequest('GET', 'http://localhost/webservicekit'),
+            new GuzzleResponse(200, [], 'Mock Body'),
+            5,
+            [],
+            [
+                'http_code' => 200,
+                'url' => 'http://localhost/webservicekit',
+                'total_time' => 5,
+            ]
+        );
+
+        $collector = new GuzzleDataCollector();
+        $this->assertEquals(
+            $collector,
+            $collector->addRequest($stats)
+        );
+
+        $collector->collect(
+            new Request(),
+            new Response()
+        );
+
+        $data = $collector->data();
+        $this->assertTrue(array_key_exists('fixture', $data['requests']['http://localhost/webservicekit'][0]));
+        $this->assertInternalType('array', $data['requests']['http://localhost/webservicekit'][0]['fixture']);
     }
 
     /* ---------------- Rendering Tests ----------------- */

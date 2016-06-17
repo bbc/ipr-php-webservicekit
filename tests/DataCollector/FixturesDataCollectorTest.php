@@ -51,4 +51,27 @@ class FixturesDataCollectorTest extends TestCase
         $this->assertEquals('sid == bbc_radio_two', $fixtured[0]['condition']);
         $this->assertEquals('{"message": "hello world"}', $fixtured[0]['body']);
     }
+
+    public function testUrlFixtureInfo()
+    {
+        $query = new Query();
+        $condition = (new QueryCondition())
+            ->has('sid', 'bbc_radio_two');
+        $response = new Response(200, [], '{"message": "hello world"}');
+
+        $collector = new FixturesDataCollector();
+        $this->assertEquals(
+            $collector,
+            $collector->conditionMatched($query, $condition, $response)
+        );
+        
+        $collector->collect(new Request(),new \Symfony\Component\HttpFoundation\Response());
+
+        $fixtureInfo = $collector->urlFixtureInfo('http://localhost/webservicekit');
+        $this->assertInternalType('array', $fixtureInfo);
+        $this->assertEquals(200, $fixtureInfo['status']);
+
+        $fixtureInfo = $collector->urlFixtureInfo('http://unknown');
+        $this->assertFalse($fixtureInfo);
+    }
 }

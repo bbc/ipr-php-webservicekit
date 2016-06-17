@@ -83,7 +83,6 @@ class FixtureService implements ServiceInterface
      */
     public function __call($name, $arguments)
     {
-        exit('__CALL '.$name);
         // Do nothing, just capture.
     }
 
@@ -210,8 +209,6 @@ class FixtureService implements ServiceInterface
      */
     public function fetch(QueryInterface $query, $raw = false)
     {
-//        var_dump($this->conditions); exit;
-
         // Loop through our conditions and see if one matches:
         $match = false;
         foreach ($this->conditions as $cond) {

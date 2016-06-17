@@ -5,6 +5,15 @@ namespace BBC\iPlayerRadio\WebserviceKit\Fixtures;
 use Pimple\Container;
 use Symfony\Component\HttpFoundation\Request;
 
+/**
+ * Class FixtureDefinition
+ *
+ * Fixture definitions are where you define your change states in a fluent way.
+ *
+ * @package     BBC\iPlayerRadio\WebserviceKit\Fixtures
+ * @author      Alex Gisby <alex.gisby@bbc.co.uk>
+ * @copyright   BBC
+ */
 abstract class FixtureDefinition
 {
     /**
