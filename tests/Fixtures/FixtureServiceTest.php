@@ -3,7 +3,7 @@
 namespace BBC\iPlayerRadio\WebserviceKit\Tests\Fixtures;
 
 use BBC\iPlayerRadio\WebserviceKit\PHPUnit\GetMockedService;
-use BBC\iPlayerRadio\WebserviceKit\Tests\Stubs\Query;
+use BBC\iPlayerRadio\WebserviceKit\Stubs\Query;
 use GuzzleHttp\Psr7\Response;
 use BBC\iPlayerRadio\WebserviceKit\PHPUnit\TestCase;
 use BBC\iPlayerRadio\WebserviceKit\Service;

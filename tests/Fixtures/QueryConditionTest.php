@@ -2,9 +2,8 @@
 
 namespace BBC\iPlayerRadio\WebserviceKit\Fixtures;
 
-use BBC\iPlayerRadio\WebserviceKit\Fixtures\QueryCondition;
 use BBC\iPlayerRadio\WebserviceKit\PHPUnit\TestCase;
-use BBC\iPlayerRadio\WebserviceKit\Tests\Stubs\Query;
+use BBC\iPlayerRadio\WebserviceKit\Stubs\Query;
 
 class QueryConditionTest extends TestCase
 {

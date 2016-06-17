@@ -3,7 +3,7 @@
 namespace BBC\iPlayerRadio\WebserviceKit\Tests;
 
 use BBC\iPlayerRadio\WebserviceKit\PHPUnit\TestCase;
-use BBC\iPlayerRadio\WebserviceKit\Tests\Stubs\Query;
+use BBC\iPlayerRadio\WebserviceKit\Stubs\Query;
 
 class QueryTest extends TestCase
 {

@@ -6,7 +6,7 @@ use BBC\iPlayerRadio\WebserviceKit\DataCollector\FixturesDataCollector;
 use BBC\iPlayerRadio\WebserviceKit\Fixtures\QueryCondition;
 use BBC\iPlayerRadio\WebserviceKit\PHPUnit\GetTwig;
 use BBC\iPlayerRadio\WebserviceKit\PHPUnit\TestCase;
-use BBC\iPlayerRadio\WebserviceKit\Tests\Stubs\Query;
+use BBC\iPlayerRadio\WebserviceKit\Stubs\Query;
 use GuzzleHttp\Psr7\Response;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -64,7 +64,7 @@ class FixturesDataCollectorTest extends TestCase
             $collector,
             $collector->conditionMatched($query, $condition, $response)
         );
-        
+
         $collector->collect(new Request(),new \Symfony\Component\HttpFoundation\Response());
 
         $fixtureInfo = $collector->urlFixtureInfo('http://localhost/webservicekit');

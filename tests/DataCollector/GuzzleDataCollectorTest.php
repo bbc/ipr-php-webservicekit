@@ -7,7 +7,7 @@ use BBC\iPlayerRadio\WebserviceKit\DataCollector\GuzzleDataCollector;
 use BBC\iPlayerRadio\WebserviceKit\Fixtures\QueryCondition;
 use BBC\iPlayerRadio\WebserviceKit\PHPUnit\GetTwig;
 use BBC\iPlayerRadio\WebserviceKit\PHPUnit\TestCase;
-use BBC\iPlayerRadio\WebserviceKit\Tests\Stubs\Query;
+use BBC\iPlayerRadio\WebserviceKit\Stubs\Query;
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use GuzzleHttp\Psr7\Response as GuzzleResponse;
 use GuzzleHttp\TransferStats;

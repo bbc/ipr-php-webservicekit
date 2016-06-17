@@ -6,7 +6,7 @@ use BBC\iPlayerRadio\Cache\Cache;
 use BBC\iPlayerRadio\WebserviceKit\NoResponseException;
 use BBC\iPlayerRadio\WebserviceKit\PHPUnit\GetMockedService;
 use BBC\iPlayerRadio\WebserviceKit\PHPUnit\TestCase;
-use BBC\iPlayerRadio\WebserviceKit\Tests\Stubs\Monitoring;
+use BBC\iPlayerRadio\WebserviceKit\Stubs\Monitoring;
 use Doctrine\Common\Cache\ArrayCache;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;

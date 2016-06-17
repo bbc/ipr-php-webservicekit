@@ -1,6 +1,6 @@
 <?php
 
-namespace BBC\iPlayerRadio\WebserviceKit\Tests\Stubs;
+namespace BBC\iPlayerRadio\WebserviceKit\Stubs;
 
 class Query extends \BBC\iPlayerRadio\WebserviceKit\Query
 {

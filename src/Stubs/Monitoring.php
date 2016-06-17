@@ -1,6 +1,6 @@
 <?php
 
-namespace BBC\iPlayerRadio\WebserviceKit\Tests\Stubs;
+namespace BBC\iPlayerRadio\WebserviceKit\Stubs;
 
 use BBC\iPlayerRadio\WebserviceKit\MonitoringInterface;
 use BBC\iPlayerRadio\WebserviceKit\QueryInterface;

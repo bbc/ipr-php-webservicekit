@@ -5,7 +5,7 @@ namespace BBC\iPlayerRadio\WebserviceKit\Tests\Fixtures;
 use BBC\iPlayerRadio\WebserviceKit\Fixtures\FixtureServiceProvider;
 use BBC\iPlayerRadio\WebserviceKit\PHPUnit\GetMockedService;
 use BBC\iPlayerRadio\WebserviceKit\PHPUnit\TestCase;
-use BBC\iPlayerRadio\WebserviceKit\Tests\Stubs\ExampleFixture;
+use BBC\iPlayerRadio\WebserviceKit\Stubs\ExampleFixture;
 use Pimple\Container;
 use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
@@ -67,7 +67,7 @@ class FixtureServiceProviderTest extends TestCase
 
         $provider = new FixtureServiceProvider();
         $provider->setNamespaces([
-            'BBC\\iPlayerRadio\\WebserviceKit\\Tests\\Stubs\\'
+            'BBC\\iPlayerRadio\\WebserviceKit\\Stubs\\'
         ]);
         $app->register($provider);
 
