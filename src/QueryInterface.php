@@ -2,6 +2,8 @@
 
 namespace BBC\iPlayerRadio\WebserviceKit;
 
+use GuzzleHttp\Psr7\Response;
+
 /**
  * Interface QueryInterface
  *
@@ -128,9 +130,10 @@ interface QueryInterface
      * This may be passed a false or a null if the call to the webservice fails, so unit test appropriately.
      *
      * @param   mixed   $response
+     * @param   array   $headers
      * @return  mixed
      */
-    public function transformPayload($response);
+    public function transformPayload($response, array $headers);
 
     /**
      * Given an Exception, return whether this should be considered a "failed" response and the breaker and monitoring

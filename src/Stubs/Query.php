@@ -5,6 +5,7 @@ namespace BBC\iPlayerRadio\WebserviceKit\Stubs;
 class Query extends \BBC\iPlayerRadio\WebserviceKit\Query
 {
     protected $endpoint = 'webservicekit';
+    protected $lastHeaders;
 
     public function __construct($endpoint = 'webservicekit')
     {
@@ -36,11 +37,24 @@ class Query extends \BBC\iPlayerRadio\WebserviceKit\Query
      *
      * This may be passed a false or a null if the call to the webservice fails, so unit test appropriately.
      *
-     * @param   mixed $response
+     * @param   mixed   $response
+     * @param   array   $headers
      * @return  mixed
      */
-    public function transformPayload($response)
+    public function transformPayload($response, array $headers)
     {
-        return ($response)? json_decode($response) : $response;
+        $this->lastHeaders = $headers;
+        return $response ? json_decode($response) : $response;
+    }
+
+    /**
+     * Returns the last headers seen by the query in a transformPayload(). Useful for verifying
+     * in the unit tests.
+     *
+     * @return  null|array
+     */
+    public function getLastHeaders()
+    {
+        return $this->lastHeaders;
     }
 }

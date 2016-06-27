@@ -102,6 +102,34 @@ class ServiceTest extends TestCase
         $this->assertInternalType('integer', $this->monitor->getResponseTimes()[0]['time']);
     }
 
+    public function testSimpleFetchPassesHeaders()
+    {
+        // Mock the service and query:
+        $service = $this->getMockedService([
+            new Response(
+                200,
+                ['Content-Type' => 'application/json', 'X-Rate-Limit' => 20],
+                '{"message": "hi there"}'
+            )
+        ]);
+        $query = $this->getMockedQuery();
+
+        // Fetch the data and check that we've returned correctly:
+        $service->fetch($query);
+        $this->assertEquals(
+            ['Content-Type' => ['application/json'], 'X-Rate-Limit' => [20]],
+            $query->getLastHeaders()
+        );
+
+        // Check that the headers are in the cache:
+        $cache = $this->cache->getAdapter();
+        $contents = $cache->fetch($query->getCacheKey());
+        $this->assertEquals(
+            ['Content-Type' => ['application/json'], 'X-Rate-Limit' => [20]],
+            $contents['payload']['headers']
+        );
+    }
+
     public function testFetch500EmptyCache()
     {
         // Mock the service and query:
@@ -181,7 +209,7 @@ class ServiceTest extends TestCase
         $contents = $cache->fetch($query->getCacheKey());
         $this->assertTrue(array_key_exists('bestBefore', $contents));
         $this->assertEquals(500, $contents['bestBefore']);
-        $this->assertEquals('{"message": "hi there"}', $contents['payload']);
+        $this->assertEquals('{"message": "hi there"}', $contents['payload']['body']);
     }
 
     /* ----------------- Cached Response Tests ----------------- */
@@ -199,7 +227,7 @@ class ServiceTest extends TestCase
             ->save($query->getCacheKey(), [
                 'bestBefore'    => 60,
                 'storedTime'    => time(),
-                'payload'       => '{"message": "hi there"}'
+                'payload'       => ['body' => '{"message": "hi there"}', 'headers' => []]
             ]);
 
         // Make the request and check the response:
@@ -227,7 +255,10 @@ class ServiceTest extends TestCase
             ->save($query->getCacheKey(), [
                 'bestBefore'    => 10,
                 'storedTime'    => time() - 20,
-                'payload'       => '{"message": "hi there cached"}' // note the message is different to prove a pull.
+                'payload'       => [
+                    'body' => '{"message": "hi there cached"}', // note the message is different to prove a pull.
+                    'headers' => []
+        ]
             ]);
 
         // Make the call and validate the response:
@@ -237,7 +268,7 @@ class ServiceTest extends TestCase
         // Check that the new response has been entered into cache:
         $this->assertEquals(
             '{"message": "hi there"}',
-            $service->getCache()->getAdapter()->fetch($query->getCacheKey())['payload']
+            $service->getCache()->getAdapter()->fetch($query->getCacheKey())['payload']['body']
         );
     }
 
@@ -258,7 +289,10 @@ class ServiceTest extends TestCase
             ->save($query->getCacheKey(), [
                 'bestBefore'    => 10,
                 'storedTime'    => time() - 20,
-                'payload'       => '{"message": "hi there"}'
+                'payload'       => [
+                    'body' => '{"message": "hi there"}',
+                    'headers' => []
+                ]
             ]);
 
         // Make the call and validate the response:
@@ -279,7 +313,7 @@ class ServiceTest extends TestCase
         // Make sure that we didn't cache the bad response:
         $this->assertEquals(
             '{"message": "hi there"}',
-            $service->getCache()->getAdapter()->fetch($query->getCacheKey())['payload']
+            $service->getCache()->getAdapter()->fetch($query->getCacheKey())['payload']['body']
         );
     }
 
@@ -545,7 +579,7 @@ class ServiceTest extends TestCase
             ->save($queries[0]->getCacheKey(), [
                 'bestBefore'    => 60,
                 'storedTime'    => time(),
-                'payload'       => '{"message": "foo"}'
+                'payload'       => ['body' => '{"message": "foo"}', 'headers' => []]
             ]);
 
         // Fetch the data and check that we've returned correctly:

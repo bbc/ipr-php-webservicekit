@@ -3,7 +3,6 @@
 namespace BBC\iPlayerRadio\WebserviceKit\PHPUnit;
 
 use BBC\iPlayerRadio\Cache\Cache;
-use BBC\iPlayerRadio\WebserviceKit\QueryInterface;
 use BBC\iPlayerRadio\WebserviceKit\Service;
 use BBC\iPlayerRadio\WebserviceKit\Stubs\Monitoring;
 use BBC\iPlayerRadio\WebserviceKit\Stubs\Query;
@@ -54,7 +53,7 @@ trait GetMockedService
      * Returns a phpUnit mocked Query object.
      *
      * @param   string  $url    Mock url endpoint (customisable for multiFetch testing)
-     * @return  QueryInterface
+     * @return  Query
      */
     protected function getMockedQuery($url = 'webservicekit')
     {

@@ -7,6 +7,7 @@ use BBC\iPlayerRadio\Cache\CacheItemInterface;
 use BBC\iPlayerRadio\WebserviceKit\DataCollector\GuzzleDataCollector;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\RequestException;
 use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\TransferStats;
 use Solution10\CircuitBreaker\CircuitBreakerInterface;
@@ -193,7 +194,7 @@ class Service implements ServiceInterface
             $url                = $query->getURL();
             $cacheKey           = md5($url);
             $cacheItem          = $this->cache->get($cacheKey);
-            $results[$idx]      = $cacheItem->getData();
+            $results[$idx]      = $cacheItem->getData()?: ['body' => false, 'headers' => []];
             $breaker            = $this->getCircuitBreaker();
 
             if ($breaker->isClosed() && ($cacheItem->isExpired() || $cacheItem->isStale())) {
@@ -213,14 +214,13 @@ class Service implements ServiceInterface
                 $options = $query->overrideRequestOptions($options);
                 $requests[] = $this->http->requestAsync('GET', $url, $options)
                 ->then(
-                    function (ResponseInterface $response) use ($breaker, $cacheItem, $query, &$results, $raw, $idx) {
+                    function (ResponseInterface $response) use ($breaker, $cacheItem, $query, &$results, $idx) {
                         $this->cacheQueryResponse($cacheItem, $query, $response);
                         $breaker->success();
 
-                        $body = (string)$response->getBody();
-                        $results[$idx] = $body;
+                        $results[$idx] = $cacheItem->getData();
                     },
-                    function (\Exception $e) use ($breaker, $cacheItem, $query, $timeouts) {
+                    function (\Exception $e) use ($breaker, $cacheItem, $query, $timeouts, &$results, $idx) {
                         // Ask the query if this exception is considered a failure or not.
                         if ($query->isFailureState($e)) {
                             $this->monitor->onException($query, $e);
@@ -252,7 +252,7 @@ class Service implements ServiceInterface
         // Now transform their payloads:
         $transformed = [];
         foreach ($results as $i => $res) {
-            $transformed[] = ($raw)? $res : $queries[$i]->transformPayload($res);
+            $transformed[] = ($raw)? $res['body'] : $queries[$i]->transformPayload($res['body'], $res['headers']);
         }
 
         return $transformed;
@@ -326,7 +326,10 @@ class Service implements ServiceInterface
             }
 
             // Now we can finally cache the thing:
-            $cacheItem->setData((string)$response->getBody());
+            $cacheItem->setData([
+                'body' => (string)$response->getBody(),
+                'headers' => $response->getHeaders() === null ? [] : $response->getHeaders()
+            ]);
             $cacheItem->setBestBefore($staleAge);
             $cacheItem->setLifetime($maxAge);
 
