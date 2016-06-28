@@ -26,7 +26,6 @@ use Solution10\CircuitBreaker\CircuitBreakerInterface;
  * @package     BBC\iPlayerRadio\WebserviceKit
  * @author      Alex Gisby <alex.gisby@bbc.co.uk>
  * @copyright   BBC
- * @see         docs/04-webservicekit.md
  */
 class Service implements ServiceInterface
 {
@@ -215,10 +214,9 @@ class Service implements ServiceInterface
                 $requests[] = $this->http->requestAsync('GET', $url, $options)
                 ->then(
                     function (ResponseInterface $response) use ($breaker, $cacheItem, $query, &$results, $idx) {
-                        $this->cacheQueryResponse($cacheItem, $query, $response);
+                        $results[$idx] = $this->getCacheObject($response);
+                        $this->cacheQueryResponse($cacheItem, $query, $response, $results[$idx]);
                         $breaker->success();
-
-                        $results[$idx] = $cacheItem->getData();
                     },
                     function (\Exception $e) use ($breaker, $cacheItem, $query, $timeouts, &$results, $idx) {
                         // Ask the query if this exception is considered a failure or not.
@@ -296,17 +294,33 @@ class Service implements ServiceInterface
     }
 
     /**
+     * Builds up the object we're going to cache from a given reponse
+     *
+     * @param   ResponseInterface   $response
+     * @return  array               ['body' => string, 'headers' => array]
+     */
+    protected function getCacheObject(ResponseInterface $response)
+    {
+        return [
+            'body' => (string)$response->getBody(),
+            'headers' => $response->getHeaders() === null ? [] : $response->getHeaders()
+        ];
+    }
+
+    /**
      * Correctly caches the response from a query
      *
      * @param   CacheItemInterface      $cacheItem
      * @param   QueryInterface          $query
      * @param   ResponseInterface       $response
+     * @param   array                   $cacheObject
      * @return  void
      */
     protected function cacheQueryResponse(
         CacheItemInterface $cacheItem,
         QueryInterface $query,
-        ResponseInterface $response
+        ResponseInterface $response,
+        array $cacheObject
     ) {
         if ($query->canCache()) {
             // Work out the lifetime:
@@ -326,10 +340,7 @@ class Service implements ServiceInterface
             }
 
             // Now we can finally cache the thing:
-            $cacheItem->setData([
-                'body' => (string)$response->getBody(),
-                'headers' => $response->getHeaders() === null ? [] : $response->getHeaders()
-            ]);
+            $cacheItem->setData($cacheObject);
             $cacheItem->setBestBefore($staleAge);
             $cacheItem->setLifetime($maxAge);
 
