@@ -7,7 +7,6 @@ use BBC\iPlayerRadio\Cache\CacheItemInterface;
 use BBC\iPlayerRadio\WebserviceKit\DataCollector\GuzzleDataCollector;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
-use GuzzleHttp\Exception\RequestException;
 use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\TransferStats;
 use Solution10\CircuitBreaker\CircuitBreakerInterface;
@@ -48,6 +47,11 @@ class Service implements ServiceInterface
      * @var     CircuitBreakerInterface
      */
     protected $breaker;
+
+    /**
+     * @var     array
+     */
+    protected $beforeHandlers = [];
 
     /**
      * Pass in a Guzzle client and the Cache instance
@@ -159,6 +163,22 @@ class Service implements ServiceInterface
     }
 
     /**
+     * Registers a before handler onto the service. This allows you to make changes to the query object
+     * just before it's about to make a request (for example setting environment correctly, or passing in
+     * common config).
+     *
+     * You should type-hint against the type of query you want to modify to target your handlers.
+     *
+     * @param   callable    $callback
+     * @return  $this
+     */
+    public function beforeQuery(callable $callback)
+    {
+        $this->beforeHandlers[] = $callback;
+        return $this;
+    }
+
+    /**
      * Fetches the service from the URL and hands off to the transformPayload function to do something useful
      * with it. Under the hood, this just uses multiFetch to reduce duplication.
      *
@@ -190,6 +210,9 @@ class Service implements ServiceInterface
 
         // Firstly, let's loop through and fetch any cached responses:
         foreach ($queries as $idx => $query) {
+            // Call the before, if there is one:
+            $query = $this->doBeforeQuery($query);
+
             $url                = $query->getURL();
             $cacheKey           = md5($url);
             $cacheItem          = $this->cache->get($cacheKey);
@@ -276,6 +299,30 @@ class Service implements ServiceInterface
     }
 
     /* ------------------ Protected Helpers -------------------------- */
+
+    /**
+     * Performs the beforeHandlers for a given query.
+     *
+     * @param   QueryInterface  $query
+     * @return  QueryInterface
+     */
+    protected function doBeforeQuery(QueryInterface $query)
+    {
+        foreach ($this->beforeHandlers as $handler) {
+            $reflected = new \ReflectionFunction($handler);
+            $parameters = $reflected->getParameters();
+
+            if (!$parameters) {
+                throw new \LogicException('beforeHandlers must have at least one parameter!');
+            }
+
+            $parameterClass = $parameters[0]->getClass();
+            if (!$parameterClass || ($parameterClass && $parameterClass->isInstance($query))) {
+                $query = call_user_func_array($handler, [$query]);
+            }
+        }
+        return $query;
+    }
 
     /**
      * Returns the correct timeouts for a given cache item.
