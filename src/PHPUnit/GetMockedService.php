@@ -45,8 +45,7 @@ trait GetMockedService
         $this->client = $this->getMockedGuzzleClient($responses);
         $this->cache = new Cache(new ArrayCache());
         $this->monitor = new Monitoring();
-        $this->circuitBreaker = new CircuitBreaker('webservicekit_tests', new ArrayCache());
-        return new Service($this->client, $this->cache, $this->monitor, $this->circuitBreaker);
+        return new Service($this->client, $this->cache, $this->monitor);
     }
 
     /**
@@ -57,6 +56,8 @@ trait GetMockedService
      */
     protected function getMockedQuery($url = 'webservicekit')
     {
-        return new Query($url);
+        $query = new Query($url);
+        $query->setCircuitBreaker(new CircuitBreaker('webservicekit_tests', new ArrayCache()));
+        return $query;
     }
 }

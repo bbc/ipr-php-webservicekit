@@ -2,6 +2,8 @@
 
 namespace BBC\iPlayerRadio\WebserviceKit;
 
+use Solution10\CircuitBreaker\CircuitBreaker;
+
 /**
  * Class Query
  *
@@ -33,6 +35,11 @@ abstract class Query implements QueryInterface
      * @var     array
      */
     protected $params = [];
+
+    /**
+     * @var     CircuitBreaker
+     */
+    protected $breaker;
 
     /**
      * Returns the headers to send with any request to this service.
@@ -206,6 +213,28 @@ abstract class Query implements QueryInterface
     public function canCache()
     {
         return true;
+    }
+
+    /**
+     * Sets the circuit breaker to use for this query
+     *
+     * @param   CircuitBreaker  $breaker
+     * @return  $this
+     */
+    public function setCircuitBreaker(CircuitBreaker $breaker)
+    {
+        $this->breaker = $breaker;
+        return $this;
+    }
+
+    /**
+     * Returns the appropriate circuitbreaker to use for this query
+     *
+     * @return  CircuitBreaker
+     */
+    public function getCircuitBreaker()
+    {
+        return $this->breaker;
     }
 
     /**

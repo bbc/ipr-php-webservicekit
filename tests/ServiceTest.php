@@ -63,19 +63,6 @@ class ServiceTest extends TestCase
         $this->assertEquals('green', $service->getMonitoring()->mark);
     }
 
-    public function testSetGetBreaker()
-    {
-        $service = $this->getMockedService();
-        $this->assertEquals($this->circuitBreaker, $service->getCircuitBreaker());
-
-        $newBreaker = new CircuitBreaker('tests', new ArrayCache());
-        $newBreaker->mark = 'yellow';
-        $this->assertEquals($service, $service->setCircuitBreaker($newBreaker));
-
-        $this->assertEquals($newBreaker, $service->getCircuitBreaker());
-        $this->assertEquals('yellow', $service->getCircuitBreaker()->mark);
-    }
-
     public function testBeforeQuery()
     {
         $service = $this->getMockedService();
@@ -338,7 +325,7 @@ class ServiceTest extends TestCase
         $query = $this->getMockedQuery();
 
         // Create and set the breaker just so we can read it's state from out here.
-        $breaker = $service->getCircuitBreaker();
+        $breaker = $query->getCircuitBreaker();
 
         // Fetch five times to trip the breaker;
         for ($i = 0; $i < 5; $i ++) {
@@ -370,7 +357,7 @@ class ServiceTest extends TestCase
         $query = $this->getMockedQuery();
 
         // Create and set the breaker just so we can read it's state from out here.
-        $breaker = $service->getCircuitBreaker();
+        $breaker = $query->getCircuitBreaker();
 
         // Fetch five times to trip the breaker;
         for ($i = 0; $i < 5; $i ++) {

@@ -3,6 +3,7 @@
 namespace BBC\iPlayerRadio\WebserviceKit;
 
 use GuzzleHttp\Psr7\Response;
+use Solution10\CircuitBreaker\CircuitBreaker;
 
 /**
  * Interface QueryInterface
@@ -112,6 +113,13 @@ interface QueryInterface
      * @return  bool
      */
     public function canCache();
+
+    /**
+     * Returns the appropriate circuitbreaker to use for this query
+     *
+     * @return  CircuitBreaker
+     */
+    public function getCircuitBreaker();
 
     /**
      * Returns a parameter for this query, and if not found, will return the default

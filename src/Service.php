@@ -59,18 +59,15 @@ class Service implements ServiceInterface
      * @param   Client                      $client
      * @param   Cache                       $cache
      * @param   MonitoringInterface         $monitor    Monitoring handler
-     * @param   CircuitBreakerInterface     $breaker    Circuit Breaker
      */
     public function __construct(
         Client $client,
         Cache $cache,
-        MonitoringInterface $monitor,
-        CircuitBreakerInterface $breaker
+        MonitoringInterface $monitor = null
     ) {
         $this->http = $client;
         $this->cache = $cache;
         $this->monitor = $monitor;
-        $this->breaker = $breaker;
     }
 
     /**
@@ -93,29 +90,6 @@ class Service implements ServiceInterface
     {
         $this->http = $client;
         return $this;
-    }
-
-    /**
-     * Sets the circuit breaker to use for this webservice. If you don't call this,
-     * getServiceBreaker() will create one for you.
-     *
-     * @param   CircuitBreakerInterface     $breaker
-     * @return  $this
-     */
-    public function setCircuitBreaker(CircuitBreakerInterface $breaker)
-    {
-        $this->breaker = $breaker;
-        return $this;
-    }
-
-    /**
-     * Returns the circuit breaker for this webservice.
-     *
-     * @return  CircuitBreakerInterface
-     */
-    public function getCircuitBreaker()
-    {
-        return $this->breaker;
     }
 
     /**
@@ -217,9 +191,9 @@ class Service implements ServiceInterface
             $cacheKey           = md5($url);
             $cacheItem          = $this->cache->get($cacheKey);
             $results[$idx]      = $cacheItem->getData()?: ['body' => false, 'headers' => []];
-            $breaker            = $this->getCircuitBreaker();
+            $breaker            = $query->getCircuitBreaker();
 
-            if ($breaker->isClosed() && ($cacheItem->isExpired() || $cacheItem->isStale())) {
+            if ((!$breaker || $breaker->isClosed()) && ($cacheItem->isExpired() || $cacheItem->isStale())) {
                 $timeouts = $this->getTimeouts($query, $cacheItem);
                 $options = [
                     'connect_timeout'   => $timeouts['connect_timeout'],
@@ -239,13 +213,19 @@ class Service implements ServiceInterface
                     function (ResponseInterface $response) use ($breaker, $cacheItem, $query, &$results, $idx) {
                         $results[$idx] = $this->getCacheObject($response);
                         $this->cacheQueryResponse($cacheItem, $query, $response, $results[$idx]);
-                        $breaker->success();
+
+                        if ($breaker) {
+                            $breaker->success();
+                        }
                     },
                     function (\Exception $e) use ($breaker, $cacheItem, $query, $timeouts, &$results, $idx) {
                         // Ask the query if this exception is considered a failure or not.
                         if ($query->isFailureState($e)) {
                             $this->monitor->onException($query, $e);
-                            $breaker->failure();
+
+                            if ($breaker) {
+                                $breaker->failure();
+                            }
                         }
 
                         // Make sure we track the time of timeouts:

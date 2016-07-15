@@ -22,7 +22,7 @@ class FixtureServiceTest extends TestCase
             ->allRequests()
             ->willReturn('{"message": "hello world!"}');
 
-        $query = new Query();
+        $query = $this->getMockedQuery();
         $response = $fixtureService->fetch($query);
         $this->assertEquals((object)['message' => 'hello world!'], $response);
     }
@@ -39,7 +39,7 @@ class FixtureServiceTest extends TestCase
             ->allRequests()
             ->willReturn('{"message": "Fixtured Call"}');
 
-        $query = new Query();
+        $query = $this->getMockedQuery();
         $response = $fixtureService->fetch($query);
         $this->assertEquals((object)['message' => 'Real Call'], $response);
     }
@@ -189,7 +189,7 @@ class FixtureServiceTest extends TestCase
             ->allRequests()
             ->willReturn('Hello', 200);
 
-        $query = new Query();
+        $query = $this->getMockedQuery();
         $result = $fixtureService->fetch($query, true);
 
         $this->assertEquals('Hello', $result);
@@ -207,7 +207,7 @@ class FixtureServiceTest extends TestCase
                 return $query->getParameter('sid');
             }, 200);
 
-        $query = new Query();
+        $query = $this->getMockedQuery();
         $query->setParameter('sid', 'bbc_radio_two');
         $result = $fixtureService->fetch($query, true);
 
@@ -225,7 +225,7 @@ class FixtureServiceTest extends TestCase
             ->allRequests()
             ->willReturn($response);
 
-        $query = new Query();
+        $query = $this->getMockedQuery();
         $result = $fixtureService->fetch($query, true);
 
         $this->assertEquals('Response Body', $result);
@@ -241,7 +241,7 @@ class FixtureServiceTest extends TestCase
             ->allRequests()
             ->willReturn('Hello', 200);
 
-        $queries = [new Query(), new Query(), new Query()];
+        $queries = [$this->getMockedQuery(), $this->getMockedQuery(), $this->getMockedQuery()];
         $result = $fixtureService->multiFetch($queries, true);
 
         $this->assertCount(3, $result);
@@ -261,7 +261,7 @@ class FixtureServiceTest extends TestCase
             ->allRequests()
             ->willReturn($response, 200, [], 1);
 
-        $query = new Query();
+        $query = $this->getMockedQuery();
 
         $start = microtime(true);
         $result = $fixtureService->fetch($query, true);
