@@ -18,7 +18,7 @@ class ProfilerCollectorsServiceProvider implements ServiceProviderInterface
         $guzzleCollector        = GuzzleDataCollector::instance();
         $fixtureCollector       = FixturesDataCollector::instance();
 
-        $app['data_collectors'] = $app->extend(
+        $app->extend(
             'data_collectors',
             function ($collectors) use (
                 $guzzleCollector,
@@ -35,8 +35,10 @@ class ProfilerCollectorsServiceProvider implements ServiceProviderInterface
         );
 
         /* @var     \Twig_Loader_Filesystem $loader */
-        $loader = $app['twig.loader.filesystem'];
-        $loader->addPath(__DIR__.'/../views', 'webservicekit');
+        $app->extend('twig.loader.filesystem', function (\Twig_Loader_Filesystem $loader) {
+            $loader->addPath(__DIR__.'/../views', 'webservicekit');
+            return $loader;
+        });
 
         $app->extend('data_collector.templates', function ($templates) {
             $templates[] = ['guzzle', '@webservicekit/guzzle'];
