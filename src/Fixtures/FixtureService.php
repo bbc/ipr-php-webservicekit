@@ -39,6 +39,11 @@ class FixtureService implements ServiceInterface
     protected $alteredServices = [];
 
     /**
+     * @var     string
+     */
+    protected $currentService = null;
+
+    /**
      * @var     array
      */
     protected $conditions = [];
@@ -98,7 +103,7 @@ class FixtureService implements ServiceInterface
     {
         if (!isset($this->currentQuery)) {
             $this->currentQuery = new QueryCondition($fixtureDefinition);
-
+            $this->currentQuery->service($this->currentService);
         }
         return $this->currentQuery;
     }
@@ -112,6 +117,7 @@ class FixtureService implements ServiceInterface
      */
     public function alterService($service, $fixtureDefinition = null)
     {
+        $this->currentService = $service;
         $this->getCurrentQuery($fixtureDefinition)->service($service);
         return $this;
     }
