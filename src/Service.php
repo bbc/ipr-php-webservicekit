@@ -232,6 +232,12 @@ class Service implements ServiceInterface
                         if ($e instanceof ConnectException) {
                             $this->monitorResponseTime($query, $timeouts['timeout']*1000);
                         }
+
+                        // If this is an out-of-bounds exception, you aren't mocking your unit tests correctly
+                        // and so we're going to yell about it.
+                        if ($e instanceof \OutOfBoundsException) {
+                            throw $e;
+                        }
                     }
                 );
 
