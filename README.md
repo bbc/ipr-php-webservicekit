@@ -77,6 +77,8 @@ class MyBackendQuery extends Query
     /**
      * Returns a friendly (and safe) name of the webservice this query hits which we can use in
      * error logging and circuit breakers etc. [a-z0-9-_] please.
+     *
+     * @return  string
      */
     public function getServiceName()
     {
