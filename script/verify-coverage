@@ -8,7 +8,7 @@
  * Basically, we can fail the build if the coverage is too low.
  */
 
-define('COVERAGE_THRESHOLD', 100.0);
+define('COVERAGE_THRESHOLD', 95.00);
 define('COVERAGE_TEXT', __DIR__.'/../build/reports/coverage.txt');
 
 echo '-----------------------------'.PHP_EOL;
