@@ -135,7 +135,6 @@ class GuzzleDataCollectorTest extends TestCase
         $crawler = new Crawler($output);
 
         // Check the toolbar:
-        $this->assertCount(1, $crawler->filter('#toolbar #toolbar_icon svg'));
         $this->assertCount(1, $crawler->filter('#toolbar #toolbar_icon .sf-toolbar-status:contains("0")'));
 
         // Check the menu:
@@ -175,7 +174,6 @@ class GuzzleDataCollectorTest extends TestCase
         $crawler = new Crawler($output);
 
         // Check the toolbar:
-        $this->assertCount(1, $crawler->filter('#toolbar #toolbar_icon svg'));
         $this->assertCount(1, $crawler->filter('#toolbar #toolbar_icon .sf-toolbar-status:contains("1")'));
 
         // Check the menu:
@@ -236,7 +234,6 @@ class GuzzleDataCollectorTest extends TestCase
         $crawler = new Crawler($output);
 
         // Check the toolbar:
-        $this->assertCount(1, $crawler->filter('#toolbar #toolbar_icon svg'));
         $this->assertCount(1, $crawler->filter('#toolbar #toolbar_icon .sf-toolbar-status:contains("2")'));
         $this->assertCount(1, $crawler->filter('#toolbar #toolbar_text .sf-toolbar-status:contains("404")'));
         $this->assertCount(1, $crawler->filter('#toolbar #toolbar_text .sf-toolbar-status:contains("200")'));

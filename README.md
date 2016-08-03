@@ -71,7 +71,7 @@ class MyBackendQuery extends Query
      */
     public function getURL()
     {
-        return 'http://my.service:8080/;
+        return 'http://my.service:8080/';
     }
 
     /**

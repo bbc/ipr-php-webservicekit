@@ -256,7 +256,7 @@ class ServiceTest extends TestCase
                 'payload'       => [
                     'body' => '{"message": "hi there cached"}', // note the message is different to prove a pull.
                     'headers' => []
-        ]
+                ]
             ]);
 
         // Make the call and validate the response:

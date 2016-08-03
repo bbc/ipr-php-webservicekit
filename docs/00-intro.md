@@ -22,4 +22,4 @@ to RESTful style APIs especially suited for Service Oriented Architectures.
 - [Queries](./03-queries.md)
 - [Fixtures](./04-fixtures.md)
 - [Monitoring](./05-monitoring.md)
-- [Resilience](./06-resilience.md)
+- [Profiler](./06-profiler.md)

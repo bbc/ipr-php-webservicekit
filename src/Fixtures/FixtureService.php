@@ -228,7 +228,6 @@ class FixtureService implements ServiceInterface
         $realCache = false;
         $realClient = false;
         if ($match && is_array($match)) {
-
             $response = $this->buildResponse($match, $query);
             FixturesDataCollector::instance()->conditionMatched($query, $match['cond'], $response);
 

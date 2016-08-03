@@ -166,7 +166,6 @@ class QueryCondition
         // Loop through and verify conditions:
         $matched = true;
         foreach ($this->conditions as $cond) {
-
             // Remember, we're checking if it DOESN'T match, so the operators are the opposite
             // to what you think they should be.
             switch ($cond['op']) {

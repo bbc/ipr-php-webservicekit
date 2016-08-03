@@ -41,7 +41,7 @@ class FixturesDataCollectorTest extends TestCase
         );
 
         $data = $collector->data();
-        $collector->collect(new Request(),new \Symfony\Component\HttpFoundation\Response());
+        $collector->collect(new Request(), new \Symfony\Component\HttpFoundation\Response());
 
         $this->assertCount(1, $data['fixturedRequests']);
 
@@ -65,7 +65,7 @@ class FixturesDataCollectorTest extends TestCase
             $collector->conditionMatched($query, $condition, $response)
         );
 
-        $collector->collect(new Request(),new \Symfony\Component\HttpFoundation\Response());
+        $collector->collect(new Request(), new \Symfony\Component\HttpFoundation\Response());
 
         $fixtureInfo = $collector->urlFixtureInfo('http://localhost/webservicekit');
         $this->assertInternalType('array', $fixtureInfo);

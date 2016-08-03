@@ -2,7 +2,6 @@
 
 namespace BBC\iPlayerRadio\WebserviceKit\DataCollector;
 
-use BBC\iPlayerRadio\WebserviceKit\Fixtures\FixtureDefinition;
 use BBC\iPlayerRadio\WebserviceKit\Fixtures\QueryCondition;
 use BBC\iPlayerRadio\WebserviceKit\QueryInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -61,7 +60,6 @@ class FixturesDataCollector extends DataCollector
      */
     public function collect(Request $request, Response $response, \Exception $exception = null)
     {
-        
     }
 
     public function data()
