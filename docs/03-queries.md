@@ -313,7 +313,8 @@ class ArticlesQuery extends \BBC\iPlayerRadio\WebserviceKit\Query
 }
 ```
 
-The keys in the array should correspond to the [Guzzle Request Options]() you're overriding.
+The keys in the array should correspond to the [Guzzle Request Options](http://docs.guzzlephp.org/en/latest/request-options.html)
+you're overriding.
 
 **Note**: make sure to modify the array and NOT overwrite it (unless you know what you're doing) as WebserviceKit
 may have put values in there already by the time it reaches your Query class!
@@ -351,9 +352,9 @@ class ArticlesQuery extends \BBC\iPlayerRadio\WebserviceKit\Query
 
 This is one of WebserviceKit's cleverest performance tricks.
 
-WebserviceKit uses the [Stale-while-revalidate]() pattern of caching from the `BBC\iPlayerRadio\Cache` library. This
-allows WebserviceKit to know which requests are super important to allow to succeed (expired cache items), but be more
-relaxed about refreshing stale items.
+WebserviceKit uses the [Stale-while-revalidate](https://github.com/bbc/ipr-php-cache#stale-while-revalidate-caching)
+pattern of caching from the `BBC\iPlayerRadio\Cache` library. This allows WebserviceKit to know which requests are super
+important to allow to succeed (expired cache items), but be more relaxed about refreshing stale items.
 
 This manifests in adaptive timeouts. Put simply; you can define one set of cURL timeouts for "stale" cache items that is
 aggressively short ensuring that the majority of users get a super-fast experience, and another set of cURL timeouts for
@@ -438,7 +439,8 @@ rate of request and clients should be good citizens.
 
 ## Circuit Breakers
 
-WebserviceKit makes (optional) use of the [Solution10\CircuitBreaker]() library to protect backends.
+WebserviceKit makes (optional) use of the [Solution10\CircuitBreaker](https://github.com/solution10/circuitbreaker)
+library to protect backends.
  
 If a backend returns an error response, the breaker will have a "failure" reported to it. If the breaker sees enough
 failures, it'll "trip" causing WebserviceKit to stop requesting data from it to give it time to recover.
