@@ -135,7 +135,7 @@ class GuzzleDataCollectorTest extends TestCase
         $crawler = new Crawler($output);
 
         // Check the toolbar:
-        $this->assertCount(1, $crawler->filter('#toolbar #toolbar_icon .sf-toolbar-status:contains("0")'));
+        $this->assertCount(1, $crawler->filter('.sf-toolbar-icon .sf-toolbar-value:contains("0")'));
 
         // Check the menu:
         $this->assertCount(1, $crawler->filter('#menu .count span:nth-child(1):contains("0")'));
@@ -174,7 +174,7 @@ class GuzzleDataCollectorTest extends TestCase
         $crawler = new Crawler($output);
 
         // Check the toolbar:
-        $this->assertCount(1, $crawler->filter('#toolbar #toolbar_icon .sf-toolbar-status:contains("1")'));
+        $this->assertCount(1, $crawler->filter('.sf-toolbar-icon .sf-toolbar-value:contains("1")'));
 
         // Check the menu:
         $this->assertCount(1, $crawler->filter('#menu .count span:nth-child(1):contains("1")'));
@@ -234,7 +234,7 @@ class GuzzleDataCollectorTest extends TestCase
         $crawler = new Crawler($output);
 
         // Check the toolbar:
-        $this->assertCount(1, $crawler->filter('#toolbar #toolbar_icon .sf-toolbar-status:contains("2")'));
+        $this->assertCount(1, $crawler->filter('.sf-toolbar-icon .sf-toolbar-value:contains("2")'));
         $this->assertCount(1, $crawler->filter('#toolbar #toolbar_text .sf-toolbar-status:contains("404")'));
         $this->assertCount(1, $crawler->filter('#toolbar #toolbar_text .sf-toolbar-status:contains("200")'));
 
