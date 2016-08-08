@@ -35,23 +35,6 @@ class FixtureServiceProviderTest extends TestCase
         $this->assertEquals('custom.webservicekit', $provider->getDiContainerKey());
     }
 
-    public function testRegister()
-    {
-        $originalService = $this->getMockedService();
-        $container = new Container();
-        $container['webservicekit'] = function () use ($originalService) {
-            return $originalService;
-        };
-
-        $provider = new FixtureServiceProvider();
-        $provider->register($container);
-
-        $this->assertInstanceOf(
-            'BBC\\iPlayerRadio\\WebserviceKit\\Fixtures\\FixtureService',
-            $container['webservicekit']
-        );
-    }
-
     public function testBootWithFixture()
     {
         $originalService = $this->getMockedService();

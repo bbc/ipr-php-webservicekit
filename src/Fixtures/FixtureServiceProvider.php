@@ -94,13 +94,6 @@ class FixtureServiceProvider implements ServiceProviderInterface, BootableProvid
      */
     public function register(Container $pimple)
     {
-        // Swaps out the Service for a FixtureService
-        $fixtureService = new FixtureService($pimple[$this->diContainerKey]);
-        $this->fixtureService = $fixtureService;
-        unset($pimple[$this->diContainerKey]);
-        $pimple[$this->diContainerKey] = function () use ($fixtureService) {
-            return $fixtureService;
-        };
     }
 
     /**
@@ -111,6 +104,14 @@ class FixtureServiceProvider implements ServiceProviderInterface, BootableProvid
         $app->before(function (Request $request) use ($app) {
             $definedFailure = $request->query->get('_fixture', false);
             if ($definedFailure) {
+                // Swaps out the Service for a FixtureService
+                $fixtureService = new FixtureService($app[$this->diContainerKey]);
+                $this->fixtureService = $fixtureService;
+                unset($app[$this->diContainerKey]);
+                $app[$this->diContainerKey] = function () use ($fixtureService) {
+                    return $fixtureService;
+                };
+
                 $namespaces = [];
                 foreach ($this->fixtureNamespaces as $ns) {
                     $namespaces[] = $ns;
