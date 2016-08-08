@@ -60,9 +60,31 @@
                         <a href="{{ request.url }}">{{ request.url }}</a>
                     </td>
                 </tr>
+                <tr style="border-bottom: 5px solid #ccc">
+                    <td colspan="4">
+                        <a href="#toggle_body" class="toggle-link">Toggle Fixture Response</a>
+                        <pre id="toggle_body" style="display: none;">
+                            {{request.body}}
+                        </pre>
+                    </td>
+                </tr>
             {% endfor %}
             </tbody>
         </table>
+        <script type="text/javascript">
+            var links = document.querySelectorAll('.toggle-link');
+            for (var i = 0; i < links.length; i ++) {
+                links[i].addEventListener('click', function (e) {
+                    e.preventDefault();
+                    var target = document.querySelector(e.target.getAttribute('href'));
+                    if (target.style.display == 'none') {
+                        target.style.display = 'block';
+                    } else {
+                        target.style.display = 'none';
+                    }
+                });
+            }
+        </script>
     {% else %}
         <p>No fixtures were loaded during this request! It's all real baby.</p>
     {% endif %}
