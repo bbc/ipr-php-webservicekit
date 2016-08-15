@@ -42,6 +42,11 @@ abstract class Query implements QueryInterface
     protected $breaker;
 
     /**
+     * @var     array
+     */
+    protected $config = [];
+
+    /**
      * Returns the headers to send with any request to this service.
      *
      * @return  array
@@ -235,6 +240,24 @@ abstract class Query implements QueryInterface
     public function getCircuitBreaker()
     {
         return $this->breaker;
+    }
+
+    /**
+     * @return  array|null
+     */
+    public function getConfig()
+    {
+        return $this->config;
+    }
+
+    /**
+     * @param   array   $config
+     * @return  $this
+     */
+    public function setConfig($config)
+    {
+        $this->config = $config;
+        return $this;
     }
 
     /**
