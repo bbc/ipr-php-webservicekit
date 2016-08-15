@@ -102,6 +102,10 @@ Therefore, WebserviceKit provides an abstract base class to extend from: `BBC\iP
 Using this, you only need to implement `getURL()`, `getServiceName()` and `transformPayload()`, although you
 can obviously override anything else you need to.
 
+## Query Config
+Config for the query can be passed in using `setConfig([])`. 
+The config should only be used for injection of query data such as API keys.
+
 ## Query Parameters
 
 Our articles query above is pretty static. Let's assume that the endpoint above provides pagination via

@@ -66,7 +66,7 @@ class QueryTest extends TestCase
         /* @var     Query   $query  */
         $query = new Query();
         $this->assertEquals([], $query->getConfig());
-        $query->setConfig(['api_key'=>'some value']);
+        $this->assertEquals($query, $query->setConfig(['api_key' => 'some value']));
         $this->assertEquals(['api_key'=>'some value'], $query->getConfig());
     }
 }
