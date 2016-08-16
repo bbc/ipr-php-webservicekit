@@ -249,7 +249,9 @@ class Service implements ServiceInterface
         }
 
         // Monitor the number of requests:
-        $this->monitor->apisCalled($serviceNameCounts);
+        if(isset($this->monitor)){
+            $this->monitor->apisCalled($serviceNameCounts);
+        }
 
         // Wait until all the requests have finished.
         \GuzzleHttp\Promise\unwrap($requests);
@@ -281,7 +283,9 @@ class Service implements ServiceInterface
         }
 
         // Log the time itself.
-        $this->monitor->responseTime($query->getServiceName(), $query->getURL(), $totalTime);
+        if(isset($this->monitor)){
+            $this->monitor->responseTime($query->getServiceName(), $query->getURL(), $totalTime);
+        }
     }
 
     /* ------------------ Protected Helpers -------------------------- */
