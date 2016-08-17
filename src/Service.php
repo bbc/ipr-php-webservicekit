@@ -220,7 +220,7 @@ class Service implements ServiceInterface
                     },
                     function (\Exception $e) use ($breaker, $cacheItem, $query, $timeouts, &$results, $idx) {
                         // Ask the query if this exception is considered a failure or not.
-                        if ($query->isFailureState($e)) {
+                        if ($query->isFailureState($e) && isset($this->monitor)) {
                             $this->monitor->onException($query, $e);
 
                             if ($breaker) {
@@ -278,7 +278,7 @@ class Service implements ServiceInterface
     {
         // Check for slowness
         $slowTime = $query->getSlowThreshold();
-        if ($totalTime >= $slowTime) {
+        if ($totalTime >= $slowTime && isset($this->monitor)) {
             $this->monitor->slowResponse($query->getServiceName(), $query->getURL(), $totalTime);
         }
 
