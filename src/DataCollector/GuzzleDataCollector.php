@@ -89,8 +89,17 @@ class GuzzleDataCollector extends DataCollector
         if ($response) {
             $transfer = $stats->getHandlerStats();
             $url = (string)$request->getUri();
+            $transfer['requestHeaders'] = $request->getHeaders();
             $transfer['headers'] = $response->getHeaders();
             $transfer['body'] = (string)$response->getBody();
+
+            $headersLower = array_change_key_case($transfer['headers'], CASE_LOWER);
+            if (array_key_exists('content-type', $headersLower)
+                && stristr($headersLower['content-type'][0], 'application/json') !== false
+            ) {
+                $transfer['body'] = json_encode(json_decode($transfer['body']), JSON_PRETTY_PRINT);
+            }
+
             $transfer['cacheKey'] = md5($url);
             $this->data['requests'][$url] = [$transfer];
             if (!array_key_exists($response->getStatusCode(), $this->data['statuses'])) {

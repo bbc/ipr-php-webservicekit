@@ -247,12 +247,16 @@ class FixtureService implements ServiceInterface
         }
 
         // Pass through to the original service to allow Guzzle to do it's thang:
-        $realResponse = $this->originalService->fetch($query, $raw);
-
-        // If we did mock something, unregister it to allow other requests to go through unchanged:
-        if ($match) {
-            $this->originalService->setClient($realClient);
-            $this->originalService->setCache($realCache);
+        $realResponse = null;
+        try {
+            $realResponse = $this->originalService->fetch($query, $raw);
+        } catch (\Exception $e) {
+            throw $e;
+        } finally {
+            if ($match) {
+                $this->originalService->setClient($realClient);
+                $this->originalService->setCache($realCache);
+            }
         }
 
         return $realResponse;

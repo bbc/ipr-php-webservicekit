@@ -62,7 +62,12 @@ class GuzzleDataCollectorTest extends TestCase
                         'http_code' => 200,
                         'body' => 'Mock Body',
                         'cacheKey' => 'ecb044e9c5e831a21ec02105152f584f',
-                        'headers' => []
+                        'headers' => [],
+                        'requestHeaders' => [
+                            'Host' => [
+                                'example.com'
+                            ]
+                        ]
                     ]
                 ]
             ],
