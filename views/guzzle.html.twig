@@ -115,10 +115,20 @@
                 <tr class="guzzle-request-additional">
                     <td colspan="7">
                         <p>
-                            <a href="#headers_{{ i }}" class="toggle-link">Toggle Headers</a>
-                            | <a href="#body_{{ i }}" class="toggle-link">Toggle Body</a>
+                            <a href="#request_headers_{{ i }}" class="toggle-link">Request Headers</a>
+                            | <a href="#headers_{{ i }}" class="toggle-link">Response Headers</a>
+                            | <a href="#body_{{ i }}" class="toggle-link">Response Body</a>
                         </p>
 
+                        <table class="headers-table" id="request_headers_{{ i }}" style="display: none;">
+                            <caption>Headers</caption>
+                            {% for header,value in r.requestHeaders %}
+                                <tr>
+                                    <th>{{ header }}</th>
+                                    <td>{{ value.0 }}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
                         <pre class="guzzle-code" id="body_{{ i }}" style="display: none;"><code>{{ r.body }}</code></pre>
                         <table class="headers-table" id="headers_{{ i }}" style="display: none;">
                             <caption>Headers</caption>
