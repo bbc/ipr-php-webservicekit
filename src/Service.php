@@ -188,7 +188,7 @@ class Service implements ServiceInterface
             $query = $this->doBeforeQuery($query);
 
             $url                = $query->getURL();
-            $cacheKey           = md5($url);
+            $cacheKey           = $query->getCacheKey();
             $cacheItem          = $this->cache->get($cacheKey);
             $results[$idx]      = $cacheItem->getData()?: ['body' => false, 'headers' => []];
             $breaker            = $query->getCircuitBreaker();
