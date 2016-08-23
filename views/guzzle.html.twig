@@ -89,7 +89,6 @@
                 <th>Connect Time (ms)</th>
                 <th>Request Size (bytes)</th>
                 <th>Download Speed (bytes/s)</th>
-                <th>Cache Key</th>
             </tr>
             </thead>
             <tbody>
@@ -115,12 +114,12 @@
                 <tr class="guzzle-request-additional">
                     <td colspan="7">
                         <p>
-                            <a href="#request_headers_{{ i }}" class="toggle-link">Request Headers</a>
-                            | <a href="#headers_{{ i }}" class="toggle-link">Response Headers</a>
-                            | <a href="#body_{{ i }}" class="toggle-link">Response Body</a>
+                            <a href="#request_headers_{{ i~loop.index0 }}" class="toggle-link">Request Headers</a>
+                            | <a href="#headers_{{ i~loop.index0 }}" class="toggle-link">Response Headers</a>
+                            | <a href="#body_{{ i~loop.index0 }}" class="toggle-link">Response Body</a>
                         </p>
 
-                        <table class="headers-table" id="request_headers_{{ i }}" style="display: none;">
+                        <table class="headers-table" id="request_headers_{{ i~loop.index0 }}" style="display: none;">
                             <caption>Headers</caption>
                             {% for header,value in r.requestHeaders %}
                                 <tr>
@@ -129,8 +128,8 @@
                                 </tr>
                             {% endfor %}
                         </table>
-                        <pre class="guzzle-code" id="body_{{ i }}" style="display: none;"><code>{{ r.body }}</code></pre>
-                        <table class="headers-table" id="headers_{{ i }}" style="display: none;">
+                        <pre class="guzzle-code" id="body_{{ i~loop.index0 }}" style="display: none;"><code>{{ r.body }}</code></pre>
+                        <table class="headers-table" id="headers_{{ i~loop.index0 }}" style="display: none;">
                             <caption>Headers</caption>
                             {% for header,value in r.headers %}
                                 <tr>

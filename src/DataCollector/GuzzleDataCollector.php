@@ -100,8 +100,11 @@ class GuzzleDataCollector extends DataCollector
                 $transfer['body'] = json_encode(json_decode($transfer['body']), JSON_PRETTY_PRINT);
             }
 
-            $transfer['cacheKey'] = md5($url);
-            $this->data['requests'][$url] = [$transfer];
+            if (!array_key_exists($url, $this->data['requests'])) {
+                $this->data['requests'][$url] = [];
+            }
+
+            $this->data['requests'][$url][] = $transfer;
             if (!array_key_exists($response->getStatusCode(), $this->data['statuses'])) {
                 $this->data['statuses'][$response->getStatusCode()] = 0;
             }
