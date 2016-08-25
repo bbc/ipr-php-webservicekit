@@ -6,6 +6,7 @@ use BBC\iPlayerRadio\Cache\Cache;
 use BBC\iPlayerRadio\Cache\CacheItemInterface;
 use BBC\iPlayerRadio\WebserviceKit\DataCollector\GuzzleDataCollector;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ConnectException;
 use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\TransferStats;
@@ -219,6 +220,11 @@ class Service implements ServiceInterface
                         }
                     },
                     function (\Exception $e) use ($breaker, $cacheItem, $query, $timeouts, &$results, $idx) {
+                        // Cache the response if it's not a proper error:
+                        if (!$query->isFailureState($e) && $e instanceof ClientException) {
+                            $this->cacheQueryResponse($cacheItem, $query, $e->getResponse(), $results[$idx]);
+                        }
+
                         // Ask the query if this exception is considered a failure or not.
                         if ($query->isFailureState($e) && isset($this->monitor)) {
                             $this->monitor->onException($query, $e);
