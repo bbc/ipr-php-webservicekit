@@ -220,18 +220,18 @@ class Service implements ServiceInterface
                         }
                     },
                     function (\Exception $e) use ($breaker, $cacheItem, $query, $timeouts, &$results, $idx) {
+                        if (isset($this->monitor)) {
+                            $this->monitor->onException($query, $e);
+                        }
+
                         // Cache the response if it's not a proper error:
                         if (!$query->isFailureState($e) && $e instanceof ClientException) {
                             $this->cacheQueryResponse($cacheItem, $query, $e->getResponse(), $results[$idx]);
                         }
 
                         // Ask the query if this exception is considered a failure or not.
-                        if ($query->isFailureState($e) && isset($this->monitor)) {
-                            $this->monitor->onException($query, $e);
-
-                            if ($breaker) {
-                                $breaker->failure();
-                            }
+                        if ($query->isFailureState($e) && $breaker) {
+                            $breaker->failure();
                         }
 
                         // Make sure we track the time of timeouts:
