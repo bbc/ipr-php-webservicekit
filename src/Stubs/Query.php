@@ -2,6 +2,8 @@
 
 namespace BBC\iPlayerRadio\WebserviceKit\Stubs;
 
+use GuzzleHttp\Exception\ClientException;
+
 class Query extends \BBC\iPlayerRadio\WebserviceKit\Query
 {
     protected $endpoint = 'webservicekit';

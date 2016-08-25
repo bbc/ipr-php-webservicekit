@@ -10,6 +10,7 @@ use BBC\iPlayerRadio\WebserviceKit\QueryInterface;
 use BBC\iPlayerRadio\WebserviceKit\Stubs\Monitoring;
 use BBC\iPlayerRadio\WebserviceKit\Stubs\OtherQuery;
 use BBC\iPlayerRadio\WebserviceKit\Stubs\Query;
+use BBC\iPlayerRadio\WebserviceKit\Stubs\Query404Ok;
 use Doctrine\Common\Cache\ArrayCache;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
@@ -312,6 +313,19 @@ class ServiceTest extends TestCase
         $this->assertEquals(
             '{"message": "hi there"}',
             $service->getCache()->getAdapter()->fetch($query->getCacheKey())['payload']['body']
+        );
+    }
+
+    public function testErrorStateCanBeCached()
+    {
+        $service = $this->getMockedService([404]);
+        $query = new Query404Ok();
+        $query->setCircuitBreaker(new CircuitBreaker('webservicekit_tests', new ArrayCache()));
+
+        $service->fetch($query);
+
+        $this->assertTrue(
+            $service->getCache()->getAdapter()->contains($query->getCacheKey())
         );
     }
 
