@@ -35,10 +35,46 @@ abstract class FixtureDefinition
      * @param   FixtureService      $service
      * @param   Request             $request
      */
-    public function __construct(FixtureService $service, Request $request)
+    public function __construct(FixtureService $service = null, Request $request = null)
     {
         $this->fixtureService = $service;
         $this->request = $request;
+    }
+
+    /**
+     * @return  FixtureService
+     */
+    public function getFixtureService()
+    {
+        return $this->fixtureService;
+    }
+
+    /**
+     * @param   FixtureService $fixtureService
+     * @return  $this
+     */
+    public function setFixtureService($fixtureService)
+    {
+        $this->fixtureService = $fixtureService;
+        return $this;
+    }
+
+    /**
+     * @return  Request
+     */
+    public function getRequest()
+    {
+        return $this->request;
+    }
+
+    /**
+     * @param   Request $request
+     * @return  $this
+     */
+    public function setRequest($request)
+    {
+        $this->request = $request;
+        return $this;
     }
 
     /**
