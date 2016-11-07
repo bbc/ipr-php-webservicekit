@@ -255,7 +255,7 @@ class Service implements ServiceInterface
         }
 
         // Monitor the number of requests:
-        if(isset($this->monitor)){
+        if (isset($this->monitor)) {
             $this->monitor->apisCalled($serviceNameCounts);
         }
 
@@ -289,7 +289,7 @@ class Service implements ServiceInterface
         }
 
         // Log the time itself.
-        if(isset($this->monitor)){
+        if (isset($this->monitor)) {
             $this->monitor->responseTime($query->getServiceName(), $query->getURL(), $totalTime);
         }
     }
