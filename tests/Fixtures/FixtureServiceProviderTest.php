@@ -22,6 +22,16 @@ class FixtureServiceProviderTest extends TestCase
         $this->assertEquals('custom.webservicekit', $provider->getDiContainerKey());
     }
 
+    public function testAddGetFixtureLoaders()
+    {
+        $provider = new FixtureServiceProvider();
+        $this->assertEquals([], $provider->getFixtureLoaders());
+
+        $loader = new NamespaceLoader();
+        $this->assertEquals($provider, $provider->addFixtureLoader($loader));
+        $this->assertEquals([$loader], $provider->getFixtureLoaders());
+    }
+
     public function testBootWithFixture()
     {
         $originalService = $this->getMockedService();

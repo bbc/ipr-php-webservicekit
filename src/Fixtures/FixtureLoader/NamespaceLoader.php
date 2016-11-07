@@ -53,9 +53,8 @@ class NamespaceLoader implements FixtureLoaderInterface
      */
     public function loadFixtureDefinition($fixtureName, FixtureService $fixtureService, Request $request)
     {
-        $namespaces = [];
         foreach ($this->fixtureNamespaces as $ns) {
-            $namespaces[] = $ns;
+            $ns = (preg_match('#\\\$#', $ns))? $ns : $ns.'\\';
             $fullClass = $ns.$fixtureName;
             if (class_exists($fullClass)) {
                 return new $fullClass($fixtureService, $request);

@@ -271,4 +271,18 @@ class FixtureServiceTest extends TestCase
         $this->assertEquals('Response Body', $result);
         $this->assertGreaterThan(1, $total);
     }
+
+    /**
+     * @expectedException           \OutOfBoundsException
+     * @expectedExceptionMessage    Test Exception
+     */
+    public function testFetchServiceThrows()
+    {
+        $originalService = $this->getMockedService([
+            new \OutOfBoundsException('Test Exception')
+        ]);
+        $fixtureService = new FixtureService($originalService);
+        $query = $this->getMockedQuery();
+        $fixtureService->fetch($query, true);
+    }
 }

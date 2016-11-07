@@ -4,6 +4,9 @@ namespace BBC\iPlayerRadio\WebserviceKit\Stubs;
 
 use GuzzleHttp\Exception\ClientException;
 
+/**
+ * @codeCoverageIgnore
+ */
 class Query404Ok extends Query
 {
     /**
