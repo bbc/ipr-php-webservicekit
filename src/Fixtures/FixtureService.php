@@ -208,10 +208,10 @@ class FixtureService implements ServiceInterface
     /**
      * This class is responsible for determining the failure condition and throwing appropriately.
      *
-     * @param   QueryInterface      $query
-     * @param   bool                $raw
+     * @param   QueryInterface  $query
+     * @param   bool            $raw
      * @return  mixed
-     * @throws  NoResponseException     When the cache is empty and the request fails.
+     * @throws \Exception
      */
     public function fetch(QueryInterface $query, $raw = false)
     {
