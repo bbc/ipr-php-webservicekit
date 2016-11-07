@@ -113,7 +113,7 @@ $response = $service->fetch($query);
 You can also run multiple queries at the same time:
 
 ```php
-list($response1, $response2) = $service->multiFetch([$query1, $query2]);
+list($response1, $response2) = $service->fetch([$query1, $query2]);
 ```
 
 This is the most basic usage of WebserviceKit, there's a lot more power beneath the hood should you need it.

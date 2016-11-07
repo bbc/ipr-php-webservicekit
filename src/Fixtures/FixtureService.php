@@ -208,58 +208,65 @@ class FixtureService implements ServiceInterface
     /**
      * This class is responsible for determining the failure condition and throwing appropriately.
      *
-     * @param   QueryInterface  $query
+     * @param   QueryInterface|QueryInterface[]  $query
      * @param   bool            $raw
      * @return  mixed
      * @throws \Exception
      */
-    public function fetch(QueryInterface $query, $raw = false)
+    public function fetch($query, $raw = false)
     {
-        // Loop through our conditions and see if one matches:
-        $match = false;
-        foreach ($this->conditions as $cond) {
-            if ($cond['cond']->matches($query)) {
-                $match = &$cond;
-                break;
+        $singleResult = !is_array($query);
+        $queries = (is_array($query))? $query : [$query];
+
+        $responses = [];
+        foreach ($queries as $q) {
+            // Loop through our conditions and see if one matches:
+            $match = false;
+            foreach ($this->conditions as $cond) {
+                if ($cond['cond']->matches($q)) {
+                    $match = &$cond;
+                    break;
+                }
             }
+
+            // If we have a match, do something:
+            $realCache = false;
+            $realClient = false;
+            if ($match && is_array($match)) {
+                $response = $this->buildResponse($match, $q);
+                FixturesDataCollector::instance()->conditionMatched($q, $match['cond'], $response);
+
+                // Swap out the service's HTTP client and a fake cache for this request:
+                $realClient = $this->originalService->getClient();
+                $this->originalService->setClient($this->getMockedGuzzleClient([
+                    $response
+                ]));
+
+                $realCache = $this->originalService->getCache();
+                $this->originalService->setCache(new Cache(new ArrayCache()));
+
+                // If we've been asked to sleep, do it now:
+                if ($match['sleep'] !== 0) {
+                    sleep($match['sleep']);
+                }
+            }
+
+            // Pass through to the original service to allow Guzzle to do it's thang:
+            $realResponse = null;
+            try {
+                $realResponse = $this->originalService->fetch($q, $raw);
+            } catch (\Exception $e) {
+                throw $e;
+            } finally {
+                if ($match) {
+                    $this->originalService->setClient($realClient);
+                    $this->originalService->setCache($realCache);
+                }
+            }
+            $responses[] = $realResponse;
         }
 
-        // If we have a match, do something:
-        $realCache = false;
-        $realClient = false;
-        if ($match && is_array($match)) {
-            $response = $this->buildResponse($match, $query);
-            FixturesDataCollector::instance()->conditionMatched($query, $match['cond'], $response);
-
-            // Swap out the service's HTTP client and a fake cache for this request:
-            $realClient = $this->originalService->getClient();
-            $this->originalService->setClient($this->getMockedGuzzleClient([
-                $response
-            ]));
-
-            $realCache = $this->originalService->getCache();
-            $this->originalService->setCache(new Cache(new ArrayCache()));
-
-            // If we've been asked to sleep, do it now:
-            if ($match['sleep'] !== 0) {
-                sleep($match['sleep']);
-            }
-        }
-
-        // Pass through to the original service to allow Guzzle to do it's thang:
-        $realResponse = null;
-        try {
-            $realResponse = $this->originalService->fetch($query, $raw);
-        } catch (\Exception $e) {
-            throw $e;
-        } finally {
-            if ($match) {
-                $this->originalService->setClient($realClient);
-                $this->originalService->setCache($realCache);
-            }
-        }
-
-        return $realResponse;
+        return ($singleResult)? $responses[0] : $responses;
     }
 
     /**
@@ -271,12 +278,7 @@ class FixtureService implements ServiceInterface
      */
     public function multiFetch(array $queries, $raw = false)
     {
-        // We can just cheat and call fetch() in a loop:
-        $realResponses = [];
-        foreach ($queries as $query) {
-            $realResponses[] = $this->fetch($query, $raw);
-        }
-        return $realResponses;
+        return $this->fetch($queries, $raw);
     }
 
     /**

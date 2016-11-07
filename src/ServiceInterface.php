@@ -10,7 +10,7 @@ namespace BBC\iPlayerRadio\WebserviceKit;
  * @package     BBC\iPlayerRadio\WebserviceKit
  * @author      Alex Gisby <alex.gisby@bbc.co.uk>
  * @copyright   BBC
- * @see         docs/04-webservicekit.md
+ * @see         docs/02-service.md
  */
 interface ServiceInterface
 {
@@ -18,13 +18,12 @@ interface ServiceInterface
      * Fetches the service from the URL and hands off to the transformPayload function to do something useful
      * with it. Under the hood, this just uses multiFetch to reduce duplication.
      *
-     * @param           QueryInterface  $query
+     * @param           QueryInterface|QueryInterface[]  $query
      * @param           bool            $raw        Whether to ignore transformPayload or not.
      * @return          mixed
      * @throws          NoResponseException     When the cache is empty and the request fails.
-     * @uses            self::multiFetch()
      */
-    public function fetch(QueryInterface $query, $raw = false);
+    public function fetch($query, $raw = false);
 
     /**
      * Fetches multiple queries from the webservice simultaneously using multi-curl or similar.
@@ -34,6 +33,7 @@ interface ServiceInterface
      * @param   QueryInterface[]    $queries
      * @param   bool                $raw
      * @return  array               Array of transformPayload objects
+     * @deprecated  Use fetch() with an array instead
      */
     public function multiFetch(array $queries, $raw = false);
 }
