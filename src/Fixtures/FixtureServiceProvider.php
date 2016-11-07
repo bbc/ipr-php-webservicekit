@@ -20,47 +20,19 @@ use Symfony\Component\HttpFoundation\Request;
 class FixtureServiceProvider implements ServiceProviderInterface, BootableProviderInterface
 {
     /**
-     * @var     array
-     */
-    protected $fixtureNamespaces = [];
-
-    /**
      * @var     string
      */
     protected $diContainerKey = 'webservicekit';
 
     /**
+     * @var     FixtureLoaderInterface[]
+     */
+    protected $loaders = [];
+
+    /**
      * @var     FixtureService
      */
     protected $fixtureService;
-
-    /**
-     * Sets the namespaces to load Fixtures from. It's up to you to make sure the Autoloader will
-     * understand these!
-     *
-     *      $fixtureSP->setNamespaces([
-     *          'Acme\\MyProduct\\Fixtures',
-     *          'Acme\\YourProduct\\Fixtures',
-     *      ]);
-     *
-     * @param   array   $namespaces
-     * @return  $this
-     */
-    public function setNamespaces(array $namespaces)
-    {
-        $this->fixtureNamespaces = $namespaces;
-        return $this;
-    }
-
-    /**
-     * Returns the fixture namespaces the service provider is using
-     *
-     * @return  array
-     */
-    public function getNamespaces()
-    {
-        return $this->fixtureNamespaces;
-    }
 
     /**
      * Returns the key in the DI container where webservicekit is
@@ -81,6 +53,24 @@ class FixtureServiceProvider implements ServiceProviderInterface, BootableProvid
     public function setDiContainerKey($diContainerKey)
     {
         $this->diContainerKey = $diContainerKey;
+        return $this;
+    }
+
+    /**
+     * @return  FixtureLoaderInterface[]
+     */
+    public function getFixtureLoaders()
+    {
+        return $this->loaders;
+    }
+
+    /**
+     * @param   FixtureLoaderInterface  $loader
+     * @return  $this
+     */
+    public function addFixtureLoader(FixtureLoaderInterface $loader)
+    {
+        $this->loaders[] = $loader;
         return $this;
     }
 
@@ -112,14 +102,15 @@ class FixtureServiceProvider implements ServiceProviderInterface, BootableProvid
                     return $fixtureService;
                 };
 
-                $namespaces = [];
-                foreach ($this->fixtureNamespaces as $ns) {
-                    $namespaces[] = $ns;
-                    $fullClass = $ns.$definedFailure;
-                    if (class_exists($fullClass)) {
-                        /* @var     \BBC\iPlayerRadio\WebserviceKit\Fixtures\FixtureDefinition    $failureClass   */
-                        $failureClass = new $fullClass($this->fixtureService, $request);
-                        $failureClass->implement();
+                foreach ($this->loaders as $fixtureLoader) {
+                    $fixtureDefinition = $fixtureLoader->loadFixtureDefinition(
+                        $definedFailure,
+                        $this->fixtureService,
+                        $request
+                    );
+                    if ($fixtureDefinition && $fixtureDefinition instanceof FixtureDefinition) {
+                        $fixtureDefinition->implement();
+                        break;
                     }
                 }
             }

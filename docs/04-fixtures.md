@@ -18,7 +18,8 @@ make integrating this a doddle.
 - [Defining Fixtures](#defining-fixtures)
 - [Fixture Conditions](#fixture-conditions)
 - [Fixture Returns](#fixture-returns)
-- [Loading Fixtures](#loading-fixtures)
+- [Using Fixtures in your app](#using-fixtures-in-your-app)
+- [Custom Fixture Loaders](#custom-fixture-loaders)
 - [Debugging Fixtures](#debugging-fixtures)
 - [How real are Fixtures?](#how-real-are-fixtures)
 
@@ -168,7 +169,7 @@ $service
     });
 ```
 
-## Loading Fixtures
+## Using Fixtures in your app
 
 So how do you get these fixtures to work in your app?
 
@@ -178,43 +179,37 @@ If you're using Silex, it's as simple as:
 <?php
 
 //
-// Assuming that all my Fixtures live under the MyApp\Fixtures namespace.
+// Assuming that all my Fixtures live under the MyApp\Fixtures and AnotherApp\\Fixtures namespaces.
 //
 
 $app = new Silex\Application();
-$app->register(
-    (new \BBC\iPlayerRadio\WebserviceKit\Fixtures\FixtureServiceProvider())
-        ->setNamespaces(['MyApp\\Fixtures'])
-);
+
+$fixtureServiceProvider = new \BBC\iPlayerRadio\WebserviceKit\Fixtures\FixtureServiceProvider();
+
+// Register a FixtureLoader. Most of the time, the namespace one will work for you:
+$fixtureLoader = new \BBC\iPlayerRadio\WebserviceKit\Fixtures\FixtureLoader\NamespaceLoader();
+$fixtureLoader->setNamespaces([
+    'MyApp\\Fixtures',
+    'AnotherApp\\Fixtures'
+]);
+$fixtureServiceProvider->addFixtureLoader($fixtureLoader);
+
+$app->register($fixtureServiceProvider);
 
 ```
 
-And it'll work! If you're using something else, this is effectively what the service provider does:
+And it'll work! If you're using something else, you'll want to look at the FixtureServiceProvider code
+to see what it's doing.
 
-```php
-<?php
+## Custom Fixture Loaders
 
-// Given a Symfony 2 request:
-$request = \Symfony\Component\HttpFoundation\Request::createFromGlobals();
+If the `NamespaceLoader` doesn't work for you, you can define your own FixtureLoader by creating a class
+that implements `BBC\iPlayerRadio\WebserviceKit\Fixtures\FixtureLoaderInterface`.
 
-// A standard service instance:
-$service = new \BBC\iPlayerRadio\WebserviceKit\Service(new GuzzleHttp\Client(), new \BBC\iPlayerRadio\Cache\Cache());
-
-// Wrap it in a FixtureService:
-$fixturedService = new \BBC\iPlayerRadio\WebserviceKit\Fixtures\FixtureService($service);
-
-// Load the Fixture from the URL:
-$fixtureClass = 'MyApp\\Fixtures\\'.$_GET['_fixture'];
-$fixtureInstance = new $fixtureClass($fixturedService, $request);
-
-// And call "implement" to make the changes to the $fixturedService
-$fixtureInstance->implement();
-
-// You should then place the $fixturedService instance in your DI container in the same slot that
-// you would have for the WebserviceKit\Service instance!
-$di->set('webservicekit', $fixturedService);
-
-```
+This is a very simple interface with just one method:
+`public function loadFixtureDefinition($fixtureName, FixtureService $fixtureService, Request $request)`
+and is expected to return the `FixtureDefinition` subclass associated with the given name, or `false` if this
+loader doesn't understand the fixture name.
 
 ## Debugging Fixtures
 

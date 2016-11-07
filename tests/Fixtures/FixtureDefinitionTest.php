@@ -5,7 +5,6 @@ namespace BBC\iPlayerRadio\WebserviceKit\Tests\Fixtures;
 use BBC\iPlayerRadio\WebserviceKit\Fixtures\FixtureService;
 use BBC\iPlayerRadio\WebserviceKit\PHPUnit\GetMockedService;
 use BBC\iPlayerRadio\WebserviceKit\PHPUnit\TestCase;
-use Pimple\Container;
 use Symfony\Component\HttpFoundation\Request;
 
 class FixtureDefinitionTest extends TestCase
@@ -13,7 +12,7 @@ class FixtureDefinitionTest extends TestCase
     use GetMockedService;
 
     /**
-     * @return  Container
+     * @return  FixtureService
      */
     protected function getMockFixtureService()
     {
@@ -52,5 +51,33 @@ class FixtureDefinitionTest extends TestCase
         $fixtureService = $this->getMockFixtureService();
         $def = $this->getMockDefinition($fixtureService);
         $this->assertInternalType('string', $def->getName());
+    }
+
+    public function testGetSetFixtureService()
+    {
+        $fixtureService = $this->getMockFixtureService();
+
+        /* @var     \BBC\iPlayerRadio\WebserviceKit\Fixtures\FixtureDefinition  $def */
+        $def = $this->getMockForAbstractClass(
+            'BBC\\iPlayerRadio\\WebserviceKit\\Fixtures\\FixtureDefinition'
+        );
+
+        $this->assertNull($def->getFixtureService());
+        $this->assertEquals($def, $def->setFixtureService($fixtureService));
+        $this->assertEquals($fixtureService, $def->getFixtureService());
+    }
+
+    public function testGetSetRequest()
+    {
+        /* @var     \BBC\iPlayerRadio\WebserviceKit\Fixtures\FixtureDefinition  $def */
+        $def = $this->getMockForAbstractClass(
+            'BBC\\iPlayerRadio\\WebserviceKit\\Fixtures\\FixtureDefinition'
+        );
+
+        $request = new Request();
+
+        $this->assertNull($def->getRequest());
+        $this->assertEquals($def, $def->setRequest($request));
+        $this->assertEquals($request, $def->getRequest());
     }
 }
