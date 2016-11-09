@@ -47,6 +47,16 @@ abstract class Query implements QueryInterface
     protected $config = [];
 
     /**
+     * @var integer
+     */
+    protected $maxAge = 300;
+
+    /**
+     * @var integer
+     */
+    protected $staleAge = 60;
+
+    /**
      * Returns the headers to send with any request to this service.
      *
      * @return  array
@@ -132,7 +142,17 @@ abstract class Query implements QueryInterface
      */
     public function getMaxAge()
     {
-        return 300;
+        return $this->maxAge;
+    }
+
+    /**
+     * Set the maximum age to keep the response cached
+     * @param int $maxAge
+     */
+    public function setMaxAge($maxAge)
+    {
+        $this->maxAge = $maxAge;
+        return $this;
     }
 
     /**
@@ -143,7 +163,17 @@ abstract class Query implements QueryInterface
      */
     public function getStaleAge()
     {
-        return 60;
+        return $this->staleAge;
+    }
+
+    /**
+     * Set the age at which to consider a cached response stale
+     * @param int $staleAge
+     */
+    public function setStaleAge($staleAge)
+    {
+        $this->staleAge = $staleAge;
+        return $this;
     }
 
     /**
