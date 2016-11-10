@@ -18,10 +18,10 @@ class QueryTest extends TestCase
         $this->assertEquals(60, $query->getStaleAge());
         $this->assertEquals(300, $query->getMaxAge());
 
-        $query->setMaxAge(15);
+        $query->forceMaxAge(15);
         $this->assertEquals(15, $query->getMaxAge());
 
-        $query->setStaleAge(15);
+        $query->forceStaleAge(15);
         $this->assertEquals(15, $query->getStaleAge());
 
         $this->assertTrue($query->isFailureState(new \Exception()));
