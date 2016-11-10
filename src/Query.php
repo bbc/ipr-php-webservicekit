@@ -146,10 +146,10 @@ abstract class Query implements QueryInterface
     }
 
     /**
-     * Set the maximum age to keep the response cached
+     * Force the maximum age to keep the response cached
      * @param int $maxAge
      */
-    public function setMaxAge($maxAge)
+    public function forceMaxAge($maxAge)
     {
         $this->maxAge = $maxAge;
         return $this;
@@ -167,10 +167,10 @@ abstract class Query implements QueryInterface
     }
 
     /**
-     * Set the age at which to consider a cached response stale
+     * Force the age at which to consider a cached response stale
      * @param int $staleAge
      */
-    public function setStaleAge($staleAge)
+    public function forceStaleAge($staleAge)
     {
         $this->staleAge = $staleAge;
         return $this;
