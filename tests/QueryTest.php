@@ -17,6 +17,13 @@ class QueryTest extends TestCase
         $this->assertEquals(['connect_timeout' => 10, 'timeout' => 10], $query->getLongTimeouts());
         $this->assertEquals(60, $query->getStaleAge());
         $this->assertEquals(300, $query->getMaxAge());
+
+        $query->forceMaxAge(15);
+        $this->assertEquals(15, $query->getMaxAge());
+
+        $query->forceStaleAge(15);
+        $this->assertEquals(15, $query->getStaleAge());
+
         $this->assertTrue($query->isFailureState(new \Exception()));
         $this->assertEquals(md5($query->getURL()), $query->getCacheKey());
         $this->assertTrue($query->canCache());
