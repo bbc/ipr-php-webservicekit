@@ -154,31 +154,20 @@ class Service implements ServiceInterface
     }
 
     /**
-     * Fetches the service from the URL and hands off to the transformPayload function to do something useful
-     * with it. Under the hood, this just uses multiFetch to reduce duplication.
+     * Fetches queries from the service and hands off to the transformPayload function to do something useful
+     * with it. You can pass a single query, or multiple queries in an array.
      *
-     * @param           QueryInterface  $query
+     * @param           QueryInterface|QueryInterface[]  $query
      * @param           bool            $raw        Whether to ignore transformPayload or not.
      * @return          mixed
      * @throws          NoResponseException     When the cache is empty and the request fails.
      * @uses            self::multiFetch()
      */
-    public function fetch(QueryInterface $query, $raw = false)
+    public function fetch($query, $raw = false)
     {
-        return $this->multiFetch([$query], $raw)[0];
-    }
+        $singleResult = !is_array($query);
+        $queries = (is_array($query))? $query : [$query];
 
-    /**
-     * Fetches multiple queries from the webservice simultaneously using multi-curl or similar.
-     * Same deal with stale-while-revalidate etc as fetch(), and responses are returned in the
-     * same order as the queries were passed in.
-     *
-     * @param   QueryInterface[]    $queries
-     * @param   bool                $raw
-     * @return  array               Array of transformPayload objects
-     */
-    public function multiFetch(array $queries, $raw = false)
-    {
         $results            = [];
         $requests           = [];
         $serviceNameCounts  = [];
@@ -210,42 +199,42 @@ class Service implements ServiceInterface
                 // Give the service a chance to change things:
                 $options = $query->overrideRequestOptions($options);
                 $requests[] = $this->http->requestAsync('GET', $url, $options)
-                ->then(
-                    function (ResponseInterface $response) use ($breaker, $cacheItem, $query, &$results, $idx) {
-                        $results[$idx] = $this->getCacheObject($response);
-                        $this->cacheQueryResponse($cacheItem, $query, $response, $results[$idx]);
+                    ->then(
+                        function (ResponseInterface $response) use ($breaker, $cacheItem, $query, &$results, $idx) {
+                            $results[$idx] = $this->getCacheObject($response);
+                            $this->cacheQueryResponse($cacheItem, $query, $response, $results[$idx]);
 
-                        if ($breaker) {
-                            $breaker->success();
-                        }
-                    },
-                    function (\Exception $e) use ($breaker, $cacheItem, $query, $timeouts, &$results, $idx) {
-                        if (isset($this->monitor)) {
-                            $this->monitor->onException($query, $e);
-                        }
+                            if ($breaker) {
+                                $breaker->success();
+                            }
+                        },
+                        function (\Exception $e) use ($breaker, $cacheItem, $query, $timeouts, &$results, $idx) {
+                            if (isset($this->monitor)) {
+                                $this->monitor->onException($query, $e);
+                            }
 
-                        // Cache the response if it's not a proper error:
-                        if (!$query->isFailureState($e) && $e instanceof ClientException) {
-                            $this->cacheQueryResponse($cacheItem, $query, $e->getResponse(), $results[$idx]);
-                        }
+                            // Cache the response if it's not a proper error:
+                            if (!$query->isFailureState($e) && $e instanceof ClientException) {
+                                $this->cacheQueryResponse($cacheItem, $query, $e->getResponse(), $results[$idx]);
+                            }
 
-                        // Ask the query if this exception is considered a failure or not.
-                        if ($query->isFailureState($e) && $breaker) {
-                            $breaker->failure();
-                        }
+                            // Ask the query if this exception is considered a failure or not.
+                            if ($query->isFailureState($e) && $breaker) {
+                                $breaker->failure();
+                            }
 
-                        // Make sure we track the time of timeouts:
-                        if ($e instanceof ConnectException) {
-                            $this->monitorResponseTime($query, $timeouts['timeout']*1000);
-                        }
+                            // Make sure we track the time of timeouts:
+                            if ($e instanceof ConnectException) {
+                                $this->monitorResponseTime($query, $timeouts['timeout']*1000);
+                            }
 
-                        // If this is an out-of-bounds exception, you aren't mocking your unit tests correctly
-                        // and so we're going to yell about it.
-                        if ($e instanceof \OutOfBoundsException) {
-                            throw $e;
+                            // If this is an out-of-bounds exception, you aren't mocking your unit tests correctly
+                            // and so we're going to yell about it.
+                            if ($e instanceof \OutOfBoundsException) {
+                                throw $e;
+                            }
                         }
-                    }
-                );
+                    );
 
                 // Increment the count of this service
                 $serviceNameCounts[$query->getServiceName()] =
@@ -270,7 +259,22 @@ class Service implements ServiceInterface
             $transformed[] = ($raw)? $res['body'] : $queries[$i]->transformPayload($res['body'], $res['headers']);
         }
 
-        return $transformed;
+        return ($singleResult)? $transformed[0] : $transformed;
+    }
+
+    /**
+     * Fetches multiple queries from the webservice simultaneously using multi-curl or similar.
+     * Same deal with stale-while-revalidate etc as fetch(), and responses are returned in the
+     * same order as the queries were passed in.
+     *
+     * @param   QueryInterface[]    $queries
+     * @param   bool                $raw
+     * @return  array               Array of transformPayload objects
+     * @deprecated  Use fetch() with an array of QueryInterface objects instead
+     */
+    public function multiFetch(array $queries, $raw = false)
+    {
+        return $this->fetch($queries, $raw);
     }
 
     /**

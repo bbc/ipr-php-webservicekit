@@ -66,13 +66,13 @@ WebserviceKit will handle the rest and you'll get the same result regardless of 
 
 If for whatever reason WebserviceKit could not fetch the data (timeout, bad response etc), you will instead get a `null`.
 
-You can also fetch multiple queries simultaneously using `multiFetch()`:
+You can also fetch multiple queries simultaneously using an array of queries:
 
 ```php
 $firstArticleQuery = (new ArticlesQuery())->setId(27);
 $secondArticleQuery = (new ArticlesQuery())->setId(28);
 
-list($firstArticle, $secondArticle) = $service->multiFetch([$firstArticleQuery, $secondArticleQuery]);
+list($firstArticle, $secondArticle) = $service->fetch([$firstArticleQuery, $secondArticleQuery]);
 ```
 
 These requests will happen together, asynchronously, and then return an array of results (expanded out above using `list()`).
