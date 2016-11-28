@@ -82,6 +82,11 @@ WebserviceKit guarantees that you will always get the same number of results as 
 order, regardless of which response finished first. Put simply, in the above example, `$firstArticle` will always be the
 result of `$firstArticleQuery` regardless of cache state, response time or failure.
 
+> **Note**: *(new in v1.1.0)* WebserviceKit will automatically de-duplicate queries for you! If you pass the same query
+into the `fetch()` function twice (even if they are different objects), the library will only run it once, but return
+it twice, as if it did run it twice! This is invisible to you as a user, you shouldn't need to care, it's just mentioned
+here in case the output of the Profiler tab is confusing.
+
 ## Callbacks
 
 WebserviceKit provides a single callback point on the service; `beforeQuery()`. The reason for this sparseness is to

@@ -5,10 +5,14 @@ namespace BBC\iPlayerRadio\WebserviceKit\Tests;
 use BBC\iPlayerRadio\Cache\Cache;
 use BBC\iPlayerRadio\WebserviceKit\NoResponseException;
 use BBC\iPlayerRadio\WebserviceKit\PHPUnit\GetMockedService;
+use BBC\iPlayerRadio\WebserviceKit\PHPUnit\LoadMockedResponse;
 use BBC\iPlayerRadio\WebserviceKit\PHPUnit\TestCase;
 use BBC\iPlayerRadio\WebserviceKit\QueryInterface;
+use BBC\iPlayerRadio\WebserviceKit\Stubs\FindProgramme;
+use BBC\iPlayerRadio\WebserviceKit\Stubs\FindProgrammes;
 use BBC\iPlayerRadio\WebserviceKit\Stubs\Monitoring;
 use BBC\iPlayerRadio\WebserviceKit\Stubs\OtherQuery;
+use BBC\iPlayerRadio\WebserviceKit\Stubs\ProgrammesQuery;
 use BBC\iPlayerRadio\WebserviceKit\Stubs\Query;
 use BBC\iPlayerRadio\WebserviceKit\Stubs\Query404Ok;
 use Doctrine\Common\Cache\ArrayCache;
@@ -22,6 +26,7 @@ use Solution10\CircuitBreaker\CircuitBreaker;
 class ServiceTest extends TestCase
 {
     use GetMockedService;
+    use LoadMockedResponse;
 
     /* --------------- Property Tests -------------------- */
 
@@ -716,5 +721,130 @@ class ServiceTest extends TestCase
         });
 
         $service->fetch($query);
+    }
+
+    /* ------------------ Named Query Tests ------------------- */
+
+    public function testDoResolveNamedQuery()
+    {
+        $service = $this->getMockedService([
+            $this->loadMockedResponse('result1.json')
+        ]);
+
+        $query = new FindProgramme('episodePid');
+
+        // processResults has been called and returned a single item.
+        $result = $service->fetch([$query])[0];
+        $this->assertInstanceOf(\stdClass::class, $result);
+        $this->assertEquals('b006qpgr', $result->pid);
+    }
+
+    /**
+     * Named queries can return an array of queries to run, which this test
+     * will ensure works:
+     */
+    public function testDoResolveQueryArray()
+    {
+        $service = $this->getMockedService([
+            $this->loadMockedResponse('result1.json'),
+            $this->loadMockedResponse('result2.json')
+        ]);
+
+        $q = new FindProgrammes(['b006qpgr', 'b00snr0w']);
+
+        $result = $service->fetch([$q])[0];
+
+        // the response should match the input format:
+        $this->assertInternalType('array', $result);
+        $this->assertCount(2, $result);
+
+        $this->assertInstanceOf(\stdClass::class, $result[0]);
+        $this->assertEquals('b006qpgr', $result[0]->pid);
+
+        $this->assertInstanceOf(\stdClass::class, $result[1]);
+        $this->assertEquals('b00snr0w', $result[1]->pid);
+    }
+
+    public function testDoResolveQueryArrayFailures()
+    {
+        $service = $this->getMockedService([
+            $this->loadMockedResponse('result1.json'),
+            500,
+            $this->loadMockedResponse('result3.json')
+        ]);
+
+        $q = new FindProgrammes(['b006qpgr', 'b00snr0w', 'b006wq4s']);
+
+        $result = $service->fetch([$q])[0];
+
+        // the response should match the input format:
+        $this->assertInternalType('array', $result);
+        $this->assertCount(3, $result);
+
+        $this->assertInstanceOf(\stdClass::class, $result[0]);
+        $this->assertEquals('b006qpgr', $result[0]->pid);
+
+        $this->assertFalse($result[1]);
+
+        $this->assertInstanceOf(\stdClass::class, $result[2]);
+        $this->assertEquals('b006wq4s', $result[2]->pid);
+    }
+
+    /* ------------- De-duplication tests -------------------- */
+
+    public function testDoResolveDuplicateQueries()
+    {
+        $service = $this->getMockedService([
+            $this->loadMockedResponse('result1.json'),
+        ]);
+
+        // Set the monitoring so we can track the number of queries.
+        $monitoring = new Monitoring();
+        $service->setMonitoring($monitoring);
+
+        $q1 = (new ProgrammesQuery())->setPid('b006qpgr');
+        $q2 = (new ProgrammesQuery())->setPid('b006qpgr');
+
+        $result = $service->fetch([$q1, $q2]);
+
+        $this->assertCount(2, $result);
+
+        $this->assertInstanceOf(\stdClass::class, $result[0]);
+        $this->assertEquals('b006qpgr', $result[0]->pid);
+        $this->assertInstanceOf(\stdClass::class, $result[1]);
+        $this->assertEquals('b006qpgr', $result[1]->pid);
+
+        // Ensure that only one request was made:
+        $this->assertEquals([
+            $q1->getServiceName() => 1
+        ], $monitoring->getApisCalled());
+    }
+
+    public function testDoResolveDuplicateNamedQueries()
+    {
+        $service = $this->getMockedService([
+            $this->loadMockedResponse('result1.json'),
+        ]);
+
+        // Set the monitoring so we can track the number of queries.
+        $monitoring = new Monitoring();
+        $service->setMonitoring($monitoring);
+
+        $q1 = new FindProgramme('b006qpgr');
+        $q2 = new FindProgramme('b006qpgr');
+
+        $result = $service->fetch([$q1, $q2]);
+
+        $this->assertCount(2, $result);
+
+        $this->assertInstanceOf(\stdClass::class, $result[0]);
+        $this->assertEquals('b006qpgr', $result[0]->pid);
+        $this->assertInstanceOf(\stdClass::class, $result[1]);
+        $this->assertEquals('b006qpgr', $result[1]->pid);
+
+        // Ensure that only one request was made:
+        $this->assertEquals([
+            'mock-programmes' => 1
+        ], $monitoring->getApisCalled());
     }
 }

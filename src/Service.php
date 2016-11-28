@@ -157,17 +157,93 @@ class Service implements ServiceInterface
      * Fetches queries from the service and hands off to the transformPayload function to do something useful
      * with it. You can pass a single query, or multiple queries in an array.
      *
-     * @param           QueryInterface|QueryInterface[]  $query
-     * @param           bool            $raw        Whether to ignore transformPayload or not.
+     * @param           QueryInterface|QueryInterface[]|NamedQueryInterface|NamedQueryInterface[]    $toFetch
+     * @param           bool                                $raw        Whether to ignore transformPayload or not.
      * @return          mixed
      * @throws          NoResponseException     When the cache is empty and the request fails.
-     * @uses            self::multiFetch()
      */
-    public function fetch($query, $raw = false)
+    public function fetch($toFetch, $raw = false)
     {
-        $singleResult = !is_array($query);
-        $queries = (is_array($query))? $query : [$query];
+        $singleResult = !is_array($toFetch);
+        $toFetch = (is_array($toFetch))? $toFetch : [$toFetch];
 
+        // Flatten the queries into a single array:
+        $allQueries = [];
+        $flattenMap = [];
+        foreach ($toFetch as $flattenIDX => $req) {
+            $query = ($req instanceof NamedQueryInterface) ? $req->query() : $req;
+            if (is_array($query)) {
+                foreach ($query as $q) {
+                    $allQueries[] = $q;
+                    $flattenMap[] = $flattenIDX;
+                }
+            } else {
+                $allQueries[] = $query;
+                $flattenMap[] = $flattenIDX;
+            }
+        }
+
+        // De-dupe the queries:
+        $seenQueries = [];
+        $insertIndex = 0;
+        $resultMap = []; // result => queries needing it
+        foreach ($allQueries as $requestIdx => $query) {
+            $queryIndex = array_search($query, $seenQueries);
+            if ($queryIndex === false) {
+                $queryIndex = $insertIndex++;
+                $seenQueries[] = $query;
+            }
+            $resultMap[$queryIndex][] = $requestIdx;
+        }
+
+        // Request the data:
+        $results = $this->doFetch($seenQueries, $raw);
+
+        // Remap the de-duping:
+        $flattenedResults = [];
+        foreach ($results as $idx => $result) {
+            $needingQueries = $resultMap[$idx];
+            foreach ($needingQueries as $qIDX) {
+                $flattenedResults[$qIDX] = $result;
+            }
+        }
+
+        ksort($flattenedResults);
+
+        // Un-flatten the result array:
+        $mappedResults = [];
+        foreach ($flattenedResults as $i => $result) {
+            $resultIndex = $flattenMap[$i];
+            if (array_key_exists($resultIndex, $mappedResults)) {
+                if (is_array($mappedResults[$resultIndex])) {
+                    $mappedResults[$resultIndex][] = $result;
+                } else {
+                    $mappedResults[$resultIndex] = [$mappedResults[$resultIndex], $result];
+                }
+            } else {
+                $mappedResults[$resultIndex] = $result;
+            }
+        }
+
+        // And finally process if they need it:
+        $processedResults = [];
+        foreach ($mappedResults as $i => $result) {
+            $processedResults[] = ($toFetch[$i] instanceof NamedQueryInterface && !$raw)?
+                $toFetch[$i]->processResults($result) : $result;
+        }
+
+        return ($singleResult)? $processedResults[0] : $processedResults;
+    }
+
+    /**
+     * Actually performs the fetching and transformation of the queries.
+     *
+     * @param   array   $queries
+     * @param   bool $raw
+     * @return  array
+     */
+    protected function doFetch($queries, $raw = false)
+    {
         $results            = [];
         $requests           = [];
         $serviceNameCounts  = [];
@@ -259,7 +335,7 @@ class Service implements ServiceInterface
             $transformed[] = ($raw)? $res['body'] : $queries[$i]->transformPayload($res['body'], $res['headers']);
         }
 
-        return ($singleResult)? $transformed[0] : $transformed;
+        return $transformed;
     }
 
     /**
