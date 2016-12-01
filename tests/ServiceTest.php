@@ -211,6 +211,85 @@ class ServiceTest extends TestCase
         $this->assertEquals('{"message": "hi there"}', $contents['payload']['body']);
     }
 
+    public function testForcingCacheLifetimeNoHeaders()
+    {
+        $service = $this->getMockedService([
+            new Response(200, [], '{"message": "hi there"}')
+        ]);
+        $query = $this->getMockedQuery();
+
+        $query
+            ->forceMaxAge(2000)
+            ->forceStaleAge(200);
+
+        $service->fetch($query);
+
+        $cache = $this->cache->getAdapter();
+        $this->assertTrue($cache->contains($query->getCacheKey()));
+        $contents = $cache->fetch($query->getCacheKey());
+        $this->assertTrue(array_key_exists('bestBefore', $contents));
+        $this->assertEquals(200, $contents['bestBefore']);
+        $this->assertEquals('{"message": "hi there"}', $contents['payload']['body']);
+    }
+
+    public function testForcingCacheLifetimeWithHeaders()
+    {
+        $ccHeader = 'max-age=1000, stale-while-revalidate=500';
+
+        $service = $this->getMockedService([
+            new Response(200, ['Cache-Control' => $ccHeader], '{"message": "hi there"}')
+        ]);
+        $query = $this->getMockedQuery();
+
+        $query
+            ->forceMaxAge(2000)
+            ->forceStaleAge(200);
+
+        $service->fetch($query);
+
+        $cache = $this->cache->getAdapter();
+        $this->assertTrue($cache->contains($query->getCacheKey()));
+        $contents = $cache->fetch($query->getCacheKey());
+        $this->assertTrue(array_key_exists('bestBefore', $contents));
+        $this->assertEquals(200, $contents['bestBefore']);
+        $this->assertEquals('{"message": "hi there"}', $contents['payload']['body']);
+    }
+
+    public function testNoCacheDirective()
+    {
+        $ccHeader = 'no-cache, max-age=1000, stale-while-revalidate=500';
+
+        $service = $this->getMockedService([
+            new Response(200, ['Cache-Control' => $ccHeader], '{"message": "hi there"}')
+        ]);
+        $query = $this->getMockedQuery();
+
+        $service->fetch($query);
+
+        $this->assertFalse(
+            $this->cache->getAdapter()->contains($query->getCacheKey())
+        );
+    }
+
+    public function testNoCacheDirectiveWithForce()
+    {
+        $ccHeader = 'no-cache, max-age=1000, stale-while-revalidate=500';
+
+        $service = $this->getMockedService([
+            new Response(200, ['Cache-Control' => $ccHeader], '{"message": "hi there"}')
+        ]);
+        $query = $this->getMockedQuery();
+        $query
+            ->forceStaleAge(100)
+            ->forceMaxAge(1000);
+
+        $service->fetch($query);
+
+        $this->assertTrue(
+            $this->cache->getAdapter()->contains($query->getCacheKey())
+        );
+    }
+
     /* ----------------- Cached Response Tests ----------------- */
 
     public function testUsesValidCache()

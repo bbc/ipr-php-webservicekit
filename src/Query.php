@@ -57,6 +57,16 @@ abstract class Query implements QueryInterface
     protected $staleAge = 60;
 
     /**
+     * @var     int
+     */
+    protected $forcedMaxAge = null;
+
+    /**
+     * @var     int
+     */
+    protected $forcedStaleAge = null;
+
+    /**
      * Returns the headers to send with any request to this service.
      *
      * @return  array
@@ -147,12 +157,24 @@ abstract class Query implements QueryInterface
 
     /**
      * Force the maximum age to keep the response cached
-     * @param int $maxAge
+     *
+     * @param   int     $maxAge
+     * @return  $this
      */
     public function forceMaxAge($maxAge)
     {
-        $this->maxAge = $maxAge;
+        $this->forcedMaxAge = $maxAge;
         return $this;
+    }
+
+    /**
+     * Returns the forced max age
+     *
+     * @return  int|null
+     */
+    public function getForcedMaxAge()
+    {
+        return $this->forcedMaxAge;
     }
 
     /**
@@ -168,12 +190,24 @@ abstract class Query implements QueryInterface
 
     /**
      * Force the age at which to consider a cached response stale
-     * @param int $staleAge
+     *
+     * @param   int     $staleAge
+     * @return  $this
      */
     public function forceStaleAge($staleAge)
     {
-        $this->staleAge = $staleAge;
+        $this->forcedStaleAge = $staleAge;
         return $this;
+    }
+
+    /**
+     * Returns the forced stale age
+     *
+     * @return  int|null
+     */
+    public function getForcedStaleAge()
+    {
+        return $this->forcedStaleAge;
     }
 
     /**
@@ -248,6 +282,45 @@ abstract class Query implements QueryInterface
     public function canCache()
     {
         return true;
+    }
+
+    /**
+     * Returns the stale and max lifetimes for the current query. Will be passed the cache control header
+     * coming back from the response.
+     *
+     * @param   string|null     $cacheControlHeader
+     * @return  array           [$staleAge, $maxAge]
+     */
+    public function getCacheAges($cacheControlHeader = null)
+    {
+        $staleAge = $this->getForcedStaleAge();
+        $maxAge = $this->getForcedMaxAge();
+
+        if ($staleAge === null || $maxAge === null) {
+            $control = [];
+            if ($cacheControlHeader) {
+                $parsed = \GuzzleHttp\Psr7\parse_header($cacheControlHeader);
+                foreach ($parsed as $pair) {
+                    $control = array_merge($control, $pair);
+                }
+            }
+
+            // If there's a no-cache directive, return out now;
+            if (in_array('no-cache', $control)) {
+                return [false, false];
+            }
+
+            if ($maxAge === null) {
+                $maxAge = (array_key_exists('max-age', $control)) ? $control['max-age'] : $this->getMaxAge();
+            }
+
+            if ($staleAge === null) {
+                $staleAge = (array_key_exists('stale-while-revalidate', $control)) ?
+                    $control['stale-while-revalidate'] : $this->getStaleAge();
+            }
+        }
+
+        return [$staleAge, $maxAge];
     }
 
     /**

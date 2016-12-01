@@ -14,6 +14,8 @@ of your integration with the library.
     - [getSlowThreshold()](#getslowthreshold)
     - [Adaptive Timeouts](#adaptive-timeouts)
 - [Caching](#caching)
+    - [Overriding Cache Lifetimes](#overriding-cache-lifetimes)
+    - [Disabling Caching](#disabling-caching)
 - [Circuit Breakers](#circuit-breakers)
 - [isFailureState](#isFailureState)
 
@@ -437,9 +439,40 @@ If max-age is not defined in the headers, WebserviceKit will use `getMaxAge()` f
 
 If stale-while-revalidate is not defined in the headers, WebserviceKit will use `getStaleAge()` from the Query class.
 
-**Note**: it is not possible to override the Cache-Control header from a response! `getMaxAge` and `getStaleAge` are
-only called if the header values are not present. This is by design; APIs should be using these values to control their
-rate of request and clients should be good citizens.
+### Overriding Cache Lifetimes
+
+You *can* override cache lifetimes for individual queries, effectively asking WebserviceKit to ignore the response
+headers and use its own times. This is **strongly discouraged** since proper HTTP APIs should be returning correct
+Cache-Control headers (but we totally get that they often don't!).
+
+To override the stale and/or max ages, use the `forceXXX` functions:
+ 
+```php
+$query
+    ->forceMaxAge(1000)
+    ->forceStaleAge(100);
+```
+
+### Disabling Caching
+
+You can mark queries as never cacheable by returning `false` from the `QueryInterface::canCache` function:
+
+```php
+class MyNonCacheableQuery implements QueryInterface
+{
+    ...
+    
+    public function canCache()
+    {
+        return false;
+    }
+    
+    ...
+}
+```
+
+The Webservice itself can also disable caching by proving the `no-cache` directive in the `Cache-Control` header, which
+will be respected **unless** you also use `forceMaxAge()`.
 
 ## Circuit Breakers
 
