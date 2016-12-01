@@ -370,28 +370,21 @@ class Service implements ServiceInterface
         array $cacheObject
     ) {
         if ($query->canCache()) {
-            // Work out the lifetime:
-            $maxAge = $query->getMaxAge();
-            $staleAge = $query->getStaleAge();
+            // Work out the lifetimes:
+            $ccHeader = ($response instanceof ResponseInterface)?
+                $response->getHeader('Cache-Control')
+                : null
+            ;
+            list($staleAge, $maxAge) = $query->getCacheAges($ccHeader);
 
-            if ($response instanceof ResponseInterface) {
-                // Check for cache control headers:
-                $parsed = \GuzzleHttp\Psr7\parse_header($response->getHeader('Cache-Control'));
-                $control = [];
-                foreach ($parsed as $pair) {
-                    $control = array_merge($control, $pair);
-                }
-                $maxAge = (array_key_exists('max-age', $control))? $control['max-age'] : $query->getMaxAge();
-                $staleAge = (array_key_exists('stale-while-revalidate', $control))?
-                    $control['stale-while-revalidate'] : $query->getStaleAge();
+            if ($maxAge !== false) {
+                // Now we can finally cache the thing:
+                $cacheItem->setData($cacheObject);
+                $cacheItem->setBestBefore($staleAge);
+                $cacheItem->setLifetime($maxAge);
+
+                $this->cache->save($cacheItem);
             }
-
-            // Now we can finally cache the thing:
-            $cacheItem->setData($cacheObject);
-            $cacheItem->setBestBefore($staleAge);
-            $cacheItem->setLifetime($maxAge);
-
-            $this->cache->save($cacheItem);
         }
     }
 }

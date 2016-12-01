@@ -94,7 +94,7 @@ interface QueryInterface
      * Return the maximum age to keep the response cached. Note; Service will ignore this
      * value if the response has a max-age portion of the Cache-Control header
      *
-     * @return  int
+     * @return      int
      */
     public function getMaxAge();
 
@@ -102,7 +102,7 @@ interface QueryInterface
      * Return the age at which to consider a cached response stale. Note; WebserviceKit\Service will
      * ignore this value if the response has a stale-while-revalidate portion of it's Cache-Control header.
      *
-     * @return  int
+     * @return      int
      */
     public function getStaleAge();
 
@@ -113,6 +113,15 @@ interface QueryInterface
      * @return  bool
      */
     public function canCache();
+
+    /**
+     * Returns the stale and max lifetimes for the current query. Will be passed the cache control header
+     * coming back from the response.
+     *
+     * @param   string|null     $cacheControlHeader
+     * @return  array           [$staleAge, $maxAge]
+     */
+    public function getCacheAges($cacheControlHeader = null);
 
     /**
      * Returns the appropriate circuitbreaker to use for this query
