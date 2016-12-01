@@ -22,7 +22,8 @@
         "silex/silex": "^2.0",
         "silex/web-profiler": "^2.0",
         "symfony/dom-crawler": "^3.0",
-        "symfony/css-selector": "^3.0"
+        "symfony/css-selector": "^3.0",
+        "bbc/ipr-resolver": "^0.1"
     },
     "autoload": {
         "psr-4": {
