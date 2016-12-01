@@ -22,7 +22,7 @@ you have common operation whereby you load an item by it's ID:
 $query = (new ItemsQuery())
     ->setParameter('id', '02374894483')
     ->setParameter('with-comments', 'true')
-    ->setParamter('limit', 1);
+    ->setParameter('limit', 1);
 ```
 
 Halfway through your project you realise you need to add another parameter to handle soft-deletes:
@@ -31,7 +31,7 @@ Halfway through your project you realise you need to add another parameter to ha
 $query = (new ItemsQuery())
     ->setParameter('id', '02374894483')
     ->setParameter('with-comments', 'true')
-    ->setParamter('limit', 1)
+    ->setParameter('limit', 1)
     ->setParameter('deleted', 'false');
 ```
 
@@ -91,7 +91,7 @@ class FindById implements NamedQueryInterface
         return (new ItemsQuery())
              ->setParameter('id', $this->id)
              ->setParameter('with-comments', 'true')
-             ->setParamter('limit', 1)
+             ->setParameter('limit', 1)
              ->setParameter('deleted', 'false');
     }
 
