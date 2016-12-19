@@ -17,9 +17,10 @@
         "bbc/ipr-cache": "^1.0"
     },
     "require-dev": {
+        "bbc/ipr-resolver": "^0.2",
+        "silex/silex": "^2.0",
         "phpunit/phpunit": "^5.0",
         "squizlabs/php_codesniffer": "^2.0",
-        "silex/silex": "^2.0",
         "silex/web-profiler": "^2.0",
         "symfony/dom-crawler": "^3.0",
         "symfony/css-selector": "^3.0"
