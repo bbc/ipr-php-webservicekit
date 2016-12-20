@@ -83,9 +83,37 @@ class WebserviceKitResolverBackend implements ResolverBackend
     public function doResolve(array $requirements)
     {
         // Flatten the queries into a single array:
+        list($queries, $flattenMap) = $this->flattenQueries($requirements);
+
+        // De-dupe the queries:
+        list($queries, $resultMap) = $this->deDuplicateQueries($queries);
+
+        // Request the data:
+        $results = $this->service->fetch($queries);
+
+        // Remap the de-duping:
+        $results = $this->reDuplicateResults($results, $resultMap);
+
+        // Un-flatten the result array:
+        $results = $this->unFlattenResults($results, $flattenMap);
+
+        return $results;
+    }
+
+    /* ------------- Protected doResolve steps ------------------ */
+
+    /**
+     * Flattens out the queries into a single list and returns both
+     * them and the mapping for them.
+     *
+     * @param   array   $queries
+     * @return  array   [flattened queries, mapping]
+     */
+    protected function flattenQueries(array $queries)
+    {
         $allQueries = [];
         $flattenMap = [];
-        foreach ($requirements as $flattenIDX => $query) {
+        foreach ($queries as $flattenIDX => $query) {
             if (is_array($query)) {
                 foreach ($query as $q) {
                     $allQueries[] = $q;
@@ -96,38 +124,66 @@ class WebserviceKitResolverBackend implements ResolverBackend
                 $flattenMap[] = $flattenIDX;
             }
         }
+        return [$allQueries, $flattenMap];
+    }
 
-        // De-dupe the queries:
-        $seenQueries = [];
+    /**
+     * De-duplicates queries and returns the uniques along with the mapping
+     * back to their input format.
+     *
+     * @param   array    $queries
+     * @return  array   [de-duped queries, mapping]
+     */
+    protected function deDuplicateQueries(array $queries)
+    {
+        $uniqueQueries = [];
         $insertIndex = 0;
         $resultMap = []; // result => queries needing it
-        foreach ($allQueries as $requestIdx => $query) {
-            $queryIndex = array_search($query, $seenQueries);
+        foreach ($queries as $requestIdx => $query) {
+            $queryIndex = array_search($query, $uniqueQueries);
             if ($queryIndex === false) {
                 $queryIndex = $insertIndex++;
-                $seenQueries[] = $query;
+                $uniqueQueries[] = $query;
             }
             $resultMap[$queryIndex][] = $requestIdx;
         }
 
-        // Request the data:
-        $results = $this->service->fetch($seenQueries);
+        return [$uniqueQueries, $resultMap];
+    }
 
-        // Remap the de-duping:
-        $flattenedResults = [];
+    /**
+     * Re-duplicates the results into all of the positions as given by the mapping.
+     *
+     * @param   array   $results
+     * @param   array   $mapping
+     * @return  array
+     */
+    protected function reDuplicateResults(array $results, array $mapping)
+    {
+        $reDuplicated = [];
         foreach ($results as $idx => $result) {
-            $needingQueries = $resultMap[$idx];
+            $needingQueries = $mapping[$idx];
             foreach ($needingQueries as $qIDX) {
-                $flattenedResults[$qIDX] = $result;
+                $reDuplicated[$qIDX] = $result;
             }
         }
 
-        ksort($flattenedResults);
+        ksort($reDuplicated);
+        return $reDuplicated;
+    }
 
-        // Un-flatten the result array:
+    /**
+     * Un-flattens the results back into the shape defined in the mapping.
+     *
+     * @param   array   $results
+     * @param   array   $mapping
+     * @return  array
+     */
+    protected function unFlattenResults(array $results, array $mapping)
+    {
         $mappedResults = [];
-        foreach ($flattenedResults as $i => $result) {
-            $resultIndex = $flattenMap[$i];
+        foreach ($results as $i => $result) {
+            $resultIndex = $mapping[$i];
             if (array_key_exists($resultIndex, $mappedResults)) {
                 if (is_array($mappedResults[$resultIndex])) {
                     $mappedResults[$resultIndex][] = $result;
@@ -138,7 +194,6 @@ class WebserviceKitResolverBackend implements ResolverBackend
                 $mappedResults[$resultIndex] = $result;
             }
         }
-
         return $mappedResults;
     }
 }
