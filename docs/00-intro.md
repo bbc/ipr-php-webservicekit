@@ -23,3 +23,4 @@ to RESTful style APIs especially suited for Service Oriented Architectures.
 - [Fixtures](./04-fixtures.md)
 - [Monitoring](./05-monitoring.md)
 - [Profiler](./06-profiler.md)
+- [Resolver Backend](./07-resolver-backend.md)
