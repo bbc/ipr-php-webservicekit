@@ -197,7 +197,6 @@ class GuzzleDataCollectorTest extends TestCase
         $this->assertEquals(202, $crawler->filter('.guzzle-request-connecttime')->first()->text());
         $this->assertEquals(1024, $crawler->filter('.guzzle-request-sizedownload')->first()->text());
         $this->assertEquals(24, $crawler->filter('.guzzle-request-speeddownload')->first()->text());
-        $this->assertCount(1, $crawler->filter('.guzzle-request-cachekey'));
     }
 
     public function testRenderMultipleRequests()
