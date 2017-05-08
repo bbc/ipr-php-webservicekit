@@ -116,7 +116,7 @@ class ServiceTest extends TestCase
         // Fetch the data and check that we've returned correctly:
         $service->fetch($query);
         $this->assertEquals(
-            ['Content-Type' => ['application/json'], 'X-Rate-Limit' => [20]],
+            ['Content-Type' => ['application/json'], 'X-Rate-Limit' => [20], 'statusCode' => 200],
             $query->getLastHeaders()
         );
 
@@ -124,7 +124,7 @@ class ServiceTest extends TestCase
         $cache = $this->cache->getAdapter();
         $contents = $cache->fetch($query->getCacheKey());
         $this->assertEquals(
-            ['Content-Type' => ['application/json'], 'X-Rate-Limit' => [20]],
+            ['Content-Type' => ['application/json'], 'X-Rate-Limit' => [20], 'statusCode' => 200],
             $contents['payload']['headers']
         );
     }
@@ -406,6 +406,21 @@ class ServiceTest extends TestCase
         $this->assertTrue(
             $service->getCache()->getAdapter()->contains($query->getCacheKey())
         );
+        $this->assertEquals(404, $query->getLastHeaders()['statusCode']);
+    }
+
+    public function testErrorStateReturnsPayload()
+    {
+        $service = $this->getMockedService([
+            new Response(404, [], json_encode(['message' => 'Error Message']))
+        ]);
+        $query = new Query404Ok();
+        $query->setCircuitBreaker(new CircuitBreaker('webservicekit_tests', new ArrayCache()));
+
+        $result = $service->fetch($query);
+
+        $this->assertEquals((object)['message' => 'Error Message'], $result);
+        $this->assertEquals(404, $query->getLastHeaders()['statusCode']);
     }
 
     /* ----------------- Circuit Breaker Tests --------------------------- */
