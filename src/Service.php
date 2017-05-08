@@ -209,29 +209,35 @@ class Service implements ServiceInterface
                             }
                         },
                         function (\Exception $e) use ($breaker, $cacheItem, $query, $timeouts, &$results, $idx) {
-                            if (isset($this->monitor)) {
-                                $this->monitor->onException($query, $e);
-                            }
+                            // Check if this is considered an error:
+                            if ($query->isFailureState($e)) {
+                                if (isset($this->monitor)) {
+                                    $this->monitor->onException($query, $e);
+                                }
 
-                            // Cache the response if it's not a proper error:
-                            if (!$query->isFailureState($e) && $e instanceof ClientException) {
+                                // Mark the breaker:
+                                if ($breaker) {
+                                    $breaker->failure();
+                                }
+
+                                // Make sure we track the time of timeouts:
+                                if ($e instanceof ConnectException) {
+                                    $this->monitorResponseTime($query, $timeouts['timeout']*1000);
+                                }
+
+                                // If this is an out-of-bounds exception, you aren't mocking your unit tests correctly
+                                // and so we're going to yell about it.
+                                if ($e instanceof \OutOfBoundsException) {
+                                    throw $e;
+                                }
+                            } elseif ($e instanceof ClientException) {
+                                // We treat this as a normal response:
+                                $results[$idx] = $this->getCacheObject($e->getResponse());
                                 $this->cacheQueryResponse($cacheItem, $query, $e->getResponse(), $results[$idx]);
-                            }
 
-                            // Ask the query if this exception is considered a failure or not.
-                            if ($query->isFailureState($e) && $breaker) {
-                                $breaker->failure();
-                            }
-
-                            // Make sure we track the time of timeouts:
-                            if ($e instanceof ConnectException) {
-                                $this->monitorResponseTime($query, $timeouts['timeout']*1000);
-                            }
-
-                            // If this is an out-of-bounds exception, you aren't mocking your unit tests correctly
-                            // and so we're going to yell about it.
-                            if ($e instanceof \OutOfBoundsException) {
-                                throw $e;
+                                if ($breaker) {
+                                    $breaker->success();
+                                }
                             }
                         }
                     );
@@ -348,9 +354,12 @@ class Service implements ServiceInterface
      */
     protected function getCacheObject(ResponseInterface $response)
     {
+        $headers = $response->getHeaders() === null ? [] : $response->getHeaders();
+        $headers['statusCode'] = $response->getStatusCode();
+
         return [
             'body' => (string)$response->getBody(),
-            'headers' => $response->getHeaders() === null ? [] : $response->getHeaders()
+            'headers' => $headers
         ];
     }
 
