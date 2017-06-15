@@ -45,6 +45,9 @@ class ErrorStateTest extends TestCase
         $this->assertEquals(1, $this->monitor->getApisCalled()['unit_tests']);
         $this->assertCount(1, $this->monitor->getExceptions());
         $this->assertContains('Bad Server Response', $this->monitor->getExceptions()[0]['exception']->getMessage());
+
+        // Ensure response time is only logged once:
+        $this->assertCount(1, $this->monitor->getResponseTimes());
     }
 
     public function testUnknownException()
@@ -60,6 +63,10 @@ class ErrorStateTest extends TestCase
         $this->assertEquals(1, $this->monitor->getApisCalled()['unit_tests']);
         $this->assertCount(1, $this->monitor->getExceptions());
         $this->assertContains('Unknown error occurred', $this->monitor->getExceptions()[0]['exception']->getMessage());
+
+
+        // Ensure response time is only logged once:
+        $this->assertCount(1, $this->monitor->getResponseTimes());
     }
 
     public function testTimeoutException()
@@ -77,6 +84,9 @@ class ErrorStateTest extends TestCase
         $this->assertEquals('unit_tests', $this->monitor->getSlowResponses()[0]['service']);
         $this->assertEquals('http://localhost/unittests', $this->monitor->getSlowResponses()[0]['url']);
         $this->assertInternalType('integer', $this->monitor->getSlowResponses()[0]['time']);
+
+        // Ensure response time is only logged once:
+        $this->assertCount(1, $this->monitor->getResponseTimes());
 
         $this->assertCount(1, $this->monitor->getExceptions());
         $this->assertContains('Connection exception', $this->monitor->getExceptions()[0]['exception']->getMessage());
@@ -97,6 +107,9 @@ class ErrorStateTest extends TestCase
         $this->assertEquals('unit_tests', $this->monitor->getSlowResponses()[0]['service']);
         $this->assertEquals('http://localhost/unittests', $this->monitor->getSlowResponses()[0]['url']);
         $this->assertInternalType('integer', $this->monitor->getSlowResponses()[0]['time']);
+
+        // Ensure response time is only logged once:
+        $this->assertCount(1, $this->monitor->getResponseTimes());
 
         $this->assertCount(1, $this->monitor->getExceptions());
         $this->assertContains('cURL error 6', $this->monitor->getExceptions()[0]['exception']->getMessage());

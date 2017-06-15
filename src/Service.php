@@ -220,11 +220,6 @@ class Service implements ServiceInterface
                                     $breaker->failure();
                                 }
 
-                                // Make sure we track the time of timeouts:
-                                if ($e instanceof ConnectException) {
-                                    $this->monitorResponseTime($query, $timeouts['timeout']*1000);
-                                }
-
                                 // If this is an out-of-bounds exception, you aren't mocking your unit tests correctly
                                 // and so we're going to yell about it.
                                 if ($e instanceof \OutOfBoundsException) {
@@ -295,12 +290,12 @@ class Service implements ServiceInterface
         // Check for slowness
         $slowTime = $query->getSlowThreshold();
         if ($totalTime >= $slowTime && isset($this->monitor)) {
-            $this->monitor->slowResponse($query->getServiceName(), $query->getURL(), $totalTime);
+            $this->monitor->slowResponse($query, $totalTime);
         }
 
         // Log the time itself.
         if (isset($this->monitor)) {
-            $this->monitor->responseTime($query->getServiceName(), $query->getURL(), $totalTime);
+            $this->monitor->responseTime($query, $totalTime);
         }
     }
 

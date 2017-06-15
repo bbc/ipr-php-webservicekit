@@ -23,11 +23,11 @@ class Monitoring implements MonitoringInterface
         return $this->apisCalled;
     }
 
-    public function slowResponse($serviceName, $url, $time)
+    public function slowResponse(QueryInterface $query, $time)
     {
         $this->slowResponses[] = [
-            'service' => $serviceName,
-            'url' => $url,
+            'service' => $query->getServiceName(),
+            'url' => $query->getURL(),
             'time' => $time,
         ];
         return $this;
@@ -38,11 +38,11 @@ class Monitoring implements MonitoringInterface
         return $this->slowResponses;
     }
 
-    public function responseTime($serviceName, $url, $time)
+    public function responseTime(QueryInterface $query, $time)
     {
         $this->responseTimes[] = [
-            'service' => $serviceName,
-            'url' => $url,
+            'service' => $query->getServiceName(),
+            'url' => $query->getURL(),
             'time' => $time,
         ];
         return $this;
