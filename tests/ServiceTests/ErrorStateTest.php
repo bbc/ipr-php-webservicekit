@@ -13,25 +13,6 @@ class ErrorStateTest extends TestCase
 {
     use GetMockedService;
 
-    public function testSlowResponse()
-    {
-        $service = $this->getMockedService();
-        $query = $this->getMockedQuery();
-
-        $service->monitorResponseTime($query, 5000);
-
-        // Verify monitoring:
-        $this->assertCount(1, $this->monitor->getSlowResponses());
-        $this->assertEquals('unit_tests', $this->monitor->getSlowResponses()[0]['service']);
-        $this->assertEquals('http://localhost/webservicekit', $this->monitor->getSlowResponses()[0]['url']);
-        $this->assertInternalType('integer', $this->monitor->getSlowResponses()[0]['time']);
-
-        $this->assertCount(1, $this->monitor->getResponseTimes());
-        $this->assertEquals('unit_tests', $this->monitor->getResponseTimes()[0]['service']);
-        $this->assertEquals('http://localhost/webservicekit', $this->monitor->getResponseTimes()[0]['url']);
-        $this->assertInternalType('integer', $this->monitor->getResponseTimes()[0]['time']);
-    }
-
     public function testServerException()
     {
         $service = $this->getMockedService([
@@ -81,12 +62,11 @@ class ErrorStateTest extends TestCase
         // Lots should be logged and monitored here:
         $this->assertEquals(1, $this->monitor->getApisCalled()['unit_tests']);
 
-        $this->assertEquals('unit_tests', $this->monitor->getSlowResponses()[0]['service']);
-        $this->assertEquals('http://localhost/unittests', $this->monitor->getSlowResponses()[0]['url']);
-        $this->assertInternalType('integer', $this->monitor->getSlowResponses()[0]['time']);
-
         // Ensure response time is only logged once:
         $this->assertCount(1, $this->monitor->getResponseTimes());
+        $this->assertEquals('unit_tests', $this->monitor->getResponseTimes()[0]['service']);
+        $this->assertEquals('http://localhost/unittests', $this->monitor->getResponseTimes()[0]['url']);
+        $this->assertInternalType('integer', $this->monitor->getResponseTimes()[0]['time']);
 
         $this->assertCount(1, $this->monitor->getExceptions());
         $this->assertContains('Connection exception', $this->monitor->getExceptions()[0]['exception']->getMessage());
@@ -104,12 +84,11 @@ class ErrorStateTest extends TestCase
         // Lots should be logged and monitored here:
         $this->assertEquals(1, $this->monitor->getApisCalled()['unit_tests']);
 
-        $this->assertEquals('unit_tests', $this->monitor->getSlowResponses()[0]['service']);
-        $this->assertEquals('http://localhost/unittests', $this->monitor->getSlowResponses()[0]['url']);
-        $this->assertInternalType('integer', $this->monitor->getSlowResponses()[0]['time']);
-
         // Ensure response time is only logged once:
         $this->assertCount(1, $this->monitor->getResponseTimes());
+        $this->assertEquals('unit_tests', $this->monitor->getResponseTimes()[0]['service']);
+        $this->assertEquals('http://localhost/unittests', $this->monitor->getResponseTimes()[0]['url']);
+        $this->assertInternalType('integer', $this->monitor->getResponseTimes()[0]['time']);
 
         $this->assertCount(1, $this->monitor->getExceptions());
         $this->assertContains('cURL error 6', $this->monitor->getExceptions()[0]['exception']->getMessage());

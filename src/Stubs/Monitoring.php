@@ -4,11 +4,11 @@ namespace BBC\iPlayerRadio\WebserviceKit\Stubs;
 
 use BBC\iPlayerRadio\WebserviceKit\MonitoringInterface;
 use BBC\iPlayerRadio\WebserviceKit\QueryInterface;
+use GuzzleHttp\TransferStats;
 
 class Monitoring implements MonitoringInterface
 {
     protected $apisCalled;
-    protected $slowResponses = [];
     protected $responseTimes = [];
     protected $exceptions = [];
 
@@ -23,27 +23,12 @@ class Monitoring implements MonitoringInterface
         return $this->apisCalled;
     }
 
-    public function slowResponse(QueryInterface $query, $time)
-    {
-        $this->slowResponses[] = [
-            'service' => $query->getServiceName(),
-            'url' => $query->getURL(),
-            'time' => $time,
-        ];
-        return $this;
-    }
-
-    public function getSlowResponses()
-    {
-        return $this->slowResponses;
-    }
-
-    public function responseTime(QueryInterface $query, $time)
+    public function onTransferStats(QueryInterface $query, TransferStats $stats)
     {
         $this->responseTimes[] = [
             'service' => $query->getServiceName(),
             'url' => $query->getURL(),
-            'time' => $time,
+            'time' => $stats->getTransferTime(),
         ];
         return $this;
     }

@@ -23,7 +23,7 @@ class MultiFetchTest extends TestCase
         ];
 
         // Fetch the data and check that we've returned correctly:
-        $responses = $service->multiFetch($queries);
+        $responses = $service->fetch($queries);
 
         $this->assertCount(2, $responses);
 
@@ -57,7 +57,7 @@ class MultiFetchTest extends TestCase
         ];
 
         // Fetch the data and check that we've returned correctly:
-        $responses = $service->multiFetch($queries);
+        $responses = $service->fetch($queries);
 
         $this->assertCount(2, $responses);
 
@@ -89,7 +89,7 @@ class MultiFetchTest extends TestCase
         ];
 
         // Fetch the data and check that we've returned correctly:
-        $responses = $service->multiFetch($queries);
+        $responses = $service->fetch($queries);
 
         $this->assertCount(2, $responses);
 
@@ -118,7 +118,7 @@ class MultiFetchTest extends TestCase
             ]);
 
         // Fetch the data and check that we've returned correctly:
-        $responses = $service->multiFetch($queries);
+        $responses = $service->fetch($queries);
 
         $this->assertCount(2, $responses);
 
