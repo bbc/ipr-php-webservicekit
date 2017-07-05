@@ -7,7 +7,6 @@ use BBC\iPlayerRadio\Cache\CacheItemInterface;
 use BBC\iPlayerRadio\WebserviceKit\DataCollector\GuzzleDataCollector;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\Exception\ConnectException;
 use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\TransferStats;
 use Solution10\CircuitBreaker\CircuitBreakerInterface;
@@ -189,8 +188,7 @@ class Service implements ServiceInterface
                     'connect_timeout'   => $timeouts['connect_timeout'],
                     'timeout'           => $timeouts['timeout'],
                     'on_stats'          => function (TransferStats $stats) use ($query) {
-                        $transferTimeMS = $stats->getTransferTime() * 1000;
-                        $this->monitorResponseTime($query, $transferTimeMS);
+                        $this->monitor->onTransferStats($query, $stats);
                         GuzzleDataCollector::instance()->addRequest($stats);
                     },
                     'headers'           => $query->getRequestHeaders()
@@ -218,11 +216,6 @@ class Service implements ServiceInterface
                                 // Mark the breaker:
                                 if ($breaker) {
                                     $breaker->failure();
-                                }
-
-                                // Make sure we track the time of timeouts:
-                                if ($e instanceof ConnectException) {
-                                    $this->monitorResponseTime($query, $timeouts['timeout']*1000);
                                 }
 
                                 // If this is an out-of-bounds exception, you aren't mocking your unit tests correctly
@@ -266,42 +259,6 @@ class Service implements ServiceInterface
         }
 
         return ($singleResult)? $transformed[0] : $transformed;
-    }
-
-    /**
-     * Fetches multiple queries from the webservice simultaneously using multi-curl or similar.
-     * Same deal with stale-while-revalidate etc as fetch(), and responses are returned in the
-     * same order as the queries were passed in.
-     *
-     * @param   QueryInterface[]    $queries
-     * @param   bool                $raw
-     * @return  array               Array of transformPayload objects
-     * @deprecated  Use fetch() with an array of QueryInterface objects instead
-     */
-    public function multiFetch(array $queries, $raw = false)
-    {
-        return $this->fetch($queries, $raw);
-    }
-
-    /**
-     * Takes a RequestInterface and correctly monitors the response time from it.
-     * Used by both successful and unsuccessful responses.
-     *
-     * @param   QueryInterface      $query
-     * @param   int                 $totalTime
-     */
-    public function monitorResponseTime(QueryInterface $query, $totalTime)
-    {
-        // Check for slowness
-        $slowTime = $query->getSlowThreshold();
-        if ($totalTime >= $slowTime && isset($this->monitor)) {
-            $this->monitor->slowResponse($query->getServiceName(), $query->getURL(), $totalTime);
-        }
-
-        // Log the time itself.
-        if (isset($this->monitor)) {
-            $this->monitor->responseTime($query->getServiceName(), $query->getURL(), $totalTime);
-        }
     }
 
     /* ------------------ Protected Helpers -------------------------- */

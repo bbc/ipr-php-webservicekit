@@ -24,16 +24,4 @@ interface ServiceInterface
      * @throws          NoResponseException     When the cache is empty and the request fails.
      */
     public function fetch($query, $raw = false);
-
-    /**
-     * Fetches multiple queries from the webservice simultaneously using multi-curl or similar.
-     * Same deal with stale-while-revalidate etc as fetch(), and responses are returned in the
-     * same order as the queries were passed in.
-     *
-     * @param   QueryInterface[]    $queries
-     * @param   bool                $raw
-     * @return  array               Array of transformPayload objects
-     * @deprecated  Use fetch() with an array instead
-     */
-    public function multiFetch(array $queries, $raw = false);
 }
