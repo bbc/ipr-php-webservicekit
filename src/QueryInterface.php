@@ -2,7 +2,6 @@
 
 namespace BBC\iPlayerRadio\WebserviceKit;
 
-use GuzzleHttp\Psr7\Response;
 use Solution10\CircuitBreaker\CircuitBreaker;
 
 /**
@@ -51,13 +50,6 @@ interface QueryInterface
      * @return  string
      */
     public function getCacheKey();
-
-    /**
-     * Returns the slow threshold for this service, in milliseconds!
-     *
-     * @return  int
-     */
-    public function getSlowThreshold();
 
     /**
      * Returns the "short" connect and response timeouts for this webservice. These should be

@@ -2,6 +2,8 @@
 
 namespace BBC\iPlayerRadio\WebserviceKit;
 
+use GuzzleHttp\TransferStats;
+
 /**
  * Interface MonitoringInterface
  *
@@ -28,20 +30,11 @@ interface MonitoringInterface
     public function apisCalled(array $callCounts);
 
     /**
-     * @param   string  $serviceName
-     * @param   string  $url
-     * @param   int     $time
+     * @param   QueryInterface  $query
+     * @param   TransferStats   $stats
      * @return  $this
      */
-    public function slowResponse($serviceName, $url, $time);
-
-    /**
-     * @param   string  $serviceName
-     * @param   string  $url
-     * @param   int     $time
-     * @return  $this
-     */
-    public function responseTime($serviceName, $url, $time);
+    public function onTransferStats(QueryInterface $query, TransferStats $stats);
 
     /**
      * @param   QueryInterface      $query
